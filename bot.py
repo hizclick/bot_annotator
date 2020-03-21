@@ -5,7 +5,6 @@ from flask import Flask, request
 
 import telebot
 
-TOKEN = '<api_token>'
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 
@@ -29,7 +28,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://sentimentannotator.com/' + TOKEN)
+    bot.set_webhook(url='https://sentimentannotator.herokuapp.com/' + TOKEN)
     return "!", 200
 
 if __name__ == "__main__":
