@@ -38,8 +38,8 @@ for item in tweet_id2.keys():
 # display 
 
 
-TOKEN = 'Put your token here'
-#bot = telebot.TeleBot(token = TOKEN)
+TOKEN = 'put the token'
+
 """
 Basic example for a bot that uses inline keyboards.
 """
@@ -54,8 +54,8 @@ logger = logging.getLogger(__name__)
 
 text = dict()
 
-keyboard = [[InlineKeyboardButton("አዎንታዊ", callback_data='Pos'),
-                 InlineKeyboardButton("አሉታዊ", callback_data='Neg'),
+keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
+                 InlineKeyboardButton("አፍራሽ", callback_data='Neg'),
                  InlineKeyboardButton("ገለልተኛ", callback_data='Nuet'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
@@ -88,44 +88,62 @@ def button(update, context):
     user.clear()
     for x in data2['username']:
         user.append(x) 
-    print(user.count(username))   
-    if(int(user.count(username)) == 25):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ5 ብር ካርድ አሸናፊ ሆነዋል!")
+    coun = user.count(username) 
+    val = coun %5
+ 
+
+    if(int(coun) == 25):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ5 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 50):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 50):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 100):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ15 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 100):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ15 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 200):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ25 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 200):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ25 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 400):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ50 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 400):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ50 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 1000):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ100 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 1000):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ100 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 3000):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ200 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 3000):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ200 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    if(int(user.count(username)) == 6000):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ400 ብር ካርድ አሸናፊ ሆነዋል!")
+    if(int(coun) == 6000):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ400 ብር ካርድ አሸናፊ ሆነዋል ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
         write(query,username)
         return 0
-    
+
        
     write(query,username)
+      
     tweet_id, tweet = random.choice(list(map.items()))
-    
+    eval(query, tweet_id,tweet)
+    if val == 0:
+        print(val)
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        message = real_control()
+        query.edit_message_text(text=message)
+        query.edit_message_reply_markup(reply_markup=reply_markup)
+        write_correct(query,username,message)
+def write_correct(query, username, message):
+    print(message)
+    with open('correct_result.csv', 'a', encoding='utf8') as f:
+        writer = csv.writer(f)
+        writer.writerow([message,format(query.data),str(username)])
+
+def eval(query,tweet_id,tweet):
     if tweet_id not in map2:
         text[tweet_id] = tweet
     
@@ -133,6 +151,15 @@ def button(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(text=message)
     query.edit_message_reply_markup(reply_markup=reply_markup)
+
+def real_control():
+    import random
+    f = open('correct.txt', encoding='utf8')
+    text = f.readlines()
+    fin= []
+    for x in text:
+        fin.append(x.replace('\n',''))
+    return random.choice(fin)
 
    
 
