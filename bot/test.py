@@ -183,6 +183,8 @@ def end(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+def instruction(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" ሚለውን ፣ አፍራሽ ከሆነ "አፍራሽ" ሚለውን ፣ ገለልትኛ ከሆነ "ገለልተኛ" ሚለውን ፣ እንዲሁም የገምቢ እና የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" የሚለውን ይምረጡ፡፡  በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በእርሶ user name በኩል የካርድ ሽልማት ይላክሎታል።')
 
 
 def main():
