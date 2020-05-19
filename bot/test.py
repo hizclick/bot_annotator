@@ -39,7 +39,7 @@ for item in tweet_id2.keys():
 # display 
 
 
-TOKEN = '1022567655:AAGjqp1EcNQKQlFlzMIr6MpLQLIoi_YJ4YM'
+TOKEN = ''
 #bot = telebot.TeleBot(token = TOKEN)
 
 '''
