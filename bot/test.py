@@ -7,6 +7,13 @@ import random
 import pandas as pd
 from flask import Flask, request 
 
+from properties.p import Property
+
+prop = Property()
+# Simply load it into a dictionary
+bot_prop = prop.load_property_files('bot.properties')
+
+
 data = pd.read_csv('annotation.csv', encoding='utf8')
 data2 = pd.read_csv('result.csv', encoding='utf8')
 
@@ -39,7 +46,7 @@ for item in tweet_id2.keys():
 # display 
 
 
-TOKEN = ''
+TOKEN = bot_prop['TOKEN']
 #bot = telebot.TeleBot(token = TOKEN)
 
 '''
