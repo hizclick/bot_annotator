@@ -18,9 +18,10 @@ count = data2['username'].value_counts()
 server= Flask(__name__)
 
 tweet_id = data['tweet_id']
+
+
 tweet = data['tweet']
 user = []
-
 
 
 map = dict()
@@ -30,15 +31,118 @@ for item in tweet_id.keys():
     map[tweet_id[item]] = tweet[item]
 
 for item in tweet_id2.keys():
+    map2[tweet_id2[item]] = sentiment[item]
 
-    map2[tweet_id[item]] = sentiment[item]
 
  # converting to dict 
   
 # display 
 
 
-TOKEN = 'put the token'
+TOKEN = '1022567655:AAGjqp1EcNQKQlFlzMIr6MpLQLIoi_YJ4YM'
+#bot = telebot.TeleBot(token = TOKEN)
+
+'''
+updater = Updater(token=TOKEN, use_context=True)
+
+
+text = open('test.txt', "r", encoding="utf-8")
+
+lines = text.readlines()
+
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
+
+
+dispatcher = updater.dispatcher
+message = list()
+import logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                     level=logging.INFO)
+
+def start(update, context):
+    global lines
+    global message
+    for num, aline in enumerate(lines, 2):
+      if random.randrange(num): continue
+      lin = aline
+    context.bot.send_message(chat_id=update.effective_chat.id, text=lin)
+    message.append(lin)
+
+
+import logging
+from telegram.ext import CommandHandler
+start_handler = CommandHandler('start', start)
+dispatcher.add_handler(start_handler)
+
+def instruction(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ አዎንታዊ ከሆነ "1"ን አሉታዊ "2"ን ገለልትኛ ከሆነ "3" ይጻፉ')
+
+import logging
+from telegram.ext import CommandHandler
+instr = CommandHandler('instruction', instruction)
+dispatcher.add_handler(instr)
+
+dispatcher = updater.dispatcher
+
+hi = list()
+count = 1
+
+def echo(update, context):
+    global lines
+    global count 
+    
+    if(count<len(lines) and len(lines)>0):
+        if(update.message.text == '1' or update.message.text == '2' or update.message.text == '3'):
+            text = open('test.txt', "r", encoding="utf-8")
+            
+            lines = text.readlines()
+
+            print('first')
+            print(message[0])
+            with open('test2.txt', 'a', encoding="utf-8") as f: 
+                f.writelines(update.message.text+"," + str(message[0]) + "\n")
+            
+            
+            for num, aline in enumerate(lines, 2):
+                if random.randrange(num): continue
+                line = aline
+            
+
+            message.clear()
+            message.append(line)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=message[0])
+
+            print("second")
+            print(message[0])
+            print(message)
+
+        elif(update.message.text == '/end'):
+            context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብሮ እናመሰግናለን!')
+        else:
+            context.bot.send_message(chat_id=update.effective_chat.id, text='እባክዎን ጽሁፉ አዎንታዊ ከሆነ "1"ን አሉታዊ "2"ን ገለልትኛ ከሆነ "3" ይጻፉ')
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብሮ እናመሰግናለን!')
+
+def end(update,context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብሮ እናመሰግናለን!')
+
+
+
+
+from telegram.ext import MessageHandler, Filters
+end_handler = MessageHandler(Filters.text, echo)
+dispatcher.add_handler(end_handler)
+
+start_handler = CommandHandler('end', end)
+dispatcher.add_handler(start_handler)
+updater.start_polling()
+'''
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# This program is dedicated to the public domain under the CC0 license.
 
 """
 Basic example for a bot that uses inline keyboards.
@@ -60,24 +164,39 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
-    text.clear()
-   
-
+    f   = open('ids.txt', 'r', encoding='utf8')
+    ids = f.read().strip().split()
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    tweet_id, tweet = random.choice(list(map.items()))
-    
-    if tweet_id not in map2:
-        text[tweet_id] = tweet
+    text.clear()
+    if(len(ids) == len(tweet_id)):
+        message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
+        update.message.reply_text(message)
+        return 0
 
-    message = tweet
-    
 
+    else:
+        for x in tweet_id:
+            if str(x) not in ids:
+                f2  = open('ids.txt', 'a', encoding='utf8')
+                f2.writelines(str(x)+'\n')
+                tid = x
+                message = map[x]
+                text[tid] = message
+                break
     update.message.reply_text(message, reply_markup=reply_markup)
+
+   
+
+   
+
 
 import csv
 
 def button(update, context):
+    
+    f   = open('ids.txt', 'r', encoding='utf8')
+    ids = f.read().strip().split()
     data2 = pd.read_csv('result.csv', encoding='utf8')
     query = update.callback_query
 
@@ -127,27 +246,40 @@ def button(update, context):
 
        
     write(query,username)
+    if(len(ids) == len(tweet_id)):
+        message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
+        query.edit_message_text(text=message)
+        return 0
+    else:
+        for x in tweet_id:
+
+            if str(x) not in ids:
+                f2  = open('ids.txt', 'a', encoding='utf8')
+                f2.writelines(str(x)+'\n')
+                tid = x
+                message = map[x]
+                text[tid] = message
+                eval(query, tid,message)
+
+                break
       
-    tweet_id, tweet = random.choice(list(map.items()))
-    eval(query, tweet_id,tweet)
     if val == 0:
-        print(val)
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = real_control()
         query.edit_message_text(text=message)
         query.edit_message_reply_markup(reply_markup=reply_markup)
         write_correct(query,username,message)
+
+        
 def write_correct(query, username, message):
-    print(message)
     with open('correct_result.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([message,format(query.data),str(username)])
 
 def eval(query,tweet_id,tweet):
-    if tweet_id not in map2:
+    if int(tweet_id) not in map2:
         text[tweet_id] = tweet
-    
-    message = tweet
+    message = text[tweet_id]
     reply_markup = InlineKeyboardMarkup(keyboard)
     query.edit_message_text(text=message)
     query.edit_message_reply_markup(reply_markup=reply_markup)
@@ -183,10 +315,9 @@ def end(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+
 def instruction(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" ሚለውን ፣ አፍራሽ ከሆነ "አፍራሽ" ሚለውን ፣ ገለልትኛ ከሆነ "ገለልተኛ" ሚለውን ፣ እንዲሁም የገምቢ እና የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" የሚለውን ይምረጡ፡፡  በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በእርሶ user name በኩል የካርድ ሽልማት ይላክሎታል።')
-
-
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" አፍራሽ ከሆነ "አፍራሽ" ሜለውን ገለልትኛ "ገለልተኛ" ሚለውን የገምቢ እና  የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" ሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲያስግቡ በትክክል በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በuser name በኩል የካርድ ሽልማት ይላክሎታል።')
 def main():
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
