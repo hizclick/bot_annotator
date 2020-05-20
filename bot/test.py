@@ -171,6 +171,10 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
+    username = update.effective_user.username
+    if username == 'NONE':
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
+        return 0
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -201,7 +205,11 @@ def start(update, context):
 import csv
 
 def button(update, context):
-    
+    query = update.callback_query
+    username = update.effective_user.username
+    if username == 'NONE':
+        query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
+        return 0
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
     data2 = pd.read_csv('result.csv', encoding='utf8')
