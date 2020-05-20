@@ -334,7 +334,7 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def instruction(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" አፍራሽ ከሆነ "አፍራሽ" ሜለውን ገለልትኛ "ገለልተኛ" ሚለውን የገምቢ እና  የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" ሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲያስግቡ በትክክል በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በuser name በኩል የካርድ ሽልማት ይላክሎታል።')
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" አፍራሽ ከሆነ "አፍራሽ" ሜለውን ገለልትኛ "ገለልተኛ" ሚለውን የገምቢ እና  የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" ሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲያስግቡ በትክክል በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በuser name በኩል የካርድ ሽልማት ይላክሎታል። ለበለጠ ማብራሪያ፦ https://annotation-wq.github.io/')
 def main():
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
