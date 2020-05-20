@@ -172,11 +172,11 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
     username = update.effective_user.username
-    print(username)
 
     if username == None:
-        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->Edit Profile-->Add username--Save")
         return 0
+    print(username,"starts annotating")
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
     reply_markup = InlineKeyboardMarkup(keyboard)
