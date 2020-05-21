@@ -337,7 +337,7 @@ def help(update, context):
     update.message.reply_text("Use /start to test this bot.")
 
 def end(update, context):
-        context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብሮ እናመሰግናለን!')
+        context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብርዎ እናመሰግናለን!')
 
 def error(update, context):
     """Log Errors caused by Updates."""
