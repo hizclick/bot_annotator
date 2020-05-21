@@ -7,13 +7,6 @@ import random
 import pandas as pd
 from flask import Flask, request 
 
-from properties.p import Property
-
-prop = Property()
-# Simply load it into a dictionary
-bot_prop = prop.load_property_files('bot.properties')
-
-
 data = pd.read_csv('annotation.csv', encoding='utf8')
 data2 = pd.read_csv('result.csv', encoding='utf8')
 
@@ -23,6 +16,7 @@ sentiment = data2['sentiment']
 count = data2['username'].value_counts()
 
 server= Flask(__name__)
+
 
 tweet_id = data['tweet_id']
 
@@ -46,7 +40,7 @@ for item in tweet_id2.keys():
 # display 
 
 
-TOKEN = bot_prop['TOKEN']
+TOKEN = '1022567655:AAGjqp1EcNQKQlFlzMIr6MpLQLIoi_YJ4YM'
 #bot = telebot.TeleBot(token = TOKEN)
 
 '''
@@ -172,11 +166,9 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
     username = update.effective_user.username
-
-    if username == None:
-        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->Edit Profile-->Add username--Save")
+    if username == 'NONE':
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
         return 0
-    print(username,"starts annotating")
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -209,13 +201,15 @@ import csv
 def button(update, context):
     query = update.callback_query
     username = update.effective_user.username
-    if username == None:
+    if username == 'NONE':
         query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
         return 0
+    user.clear()
+
+    
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
     data2 = pd.read_csv('result.csv', encoding='utf8')
-    query = update.callback_query
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
@@ -225,8 +219,8 @@ def button(update, context):
     for x in data2['username']:
         user.append(x) 
     coun = user.count(username) 
-    val = coun %6
- 
+    val = coun %5
+    print(val)
 
     if(int(coun) == 25):
         query.edit_message_text(text="አንኳን ደስ አሎት የ5 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' ብለው ይጻፉ")
@@ -313,6 +307,7 @@ def real_control():
    
 
 def write(query,username):
+
     for key in text:
         text[key] = format(query.data)
     
@@ -320,6 +315,7 @@ def write(query,username):
         writer = csv.writer(f)
         for key, value in text.items(): 
             writer.writerow([key,value,str(username)])
+            print(key,value,str(username))
     text.clear()
 
 
@@ -334,7 +330,7 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def instruction(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" አፍራሽ ከሆነ "አፍራሽ" ሜለውን ገለልትኛ "ገለልተኛ" ሚለውን የገምቢ እና  የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" ሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲያስግቡ በትክክል በመለሱት ጥያቄ መሰረት በእለቱ መጨረሻ በuser name በኩል የካርድ ሽልማት ይላክሎታል። ለበለጠ ማብራሪያ፦ https://annotation-wq.github.io/')
+    context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" የሚለውን፣ አፍራሽ ከሆነ "አፍራሽ" የሚለውን፣ ገለልትኛ "ገለልተኛ" የሚለውን ፣ የገምቢ እና የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" የሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲሞሉ በትክክል በመለሱት ጥያቄ ልክ በዕለቱ መጨረሻ በእርስዎ "user name" በኩል የሞባይል ካርድ ሽልማት ይላክለዎታል። ለበለጠ መረጃ https://annotation-wq.github.io/')
 def main():
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
