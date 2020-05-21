@@ -6,6 +6,7 @@ import random
 #import telebot
 import pandas as pd
 from flask import Flask, request 
+
 if not os.path.exists('result.csv'):
     columns = ['tweet_id','sentiment','username']
     df = pd.DataFrame(columns=columns)
@@ -19,7 +20,7 @@ if not os.path.exists('correct_result.csv'):
 
 if not os.path.exists('ids.txt'):
     f = open('ids.txt', 'w', encoding='utf8')
-    f.close(
+    f.close()
 data = pd.read_csv('annotation.csv', encoding='utf8')
 data2 = pd.read_csv('result.csv', encoding='utf8')
 
