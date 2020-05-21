@@ -225,7 +225,7 @@ def button(update, context):
     for x in data2['username']:
         user.append(x) 
     coun = user.count(username) 
-    val = coun %5
+    val = coun %6
  
 
     if(int(coun) == 25):
