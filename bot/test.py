@@ -6,7 +6,9 @@ import random
 #import telebot
 import pandas as pd
 from flask import Flask, request 
+from properties.p import Property
 
+prop = Property()
 if not os.path.exists('result.csv'):
     columns = ['tweet_id','sentiment','username']
     df = pd.DataFrame(columns=columns)
@@ -54,8 +56,8 @@ for item in tweet_id2.keys():
 # display 
 
 
-TOKEN = '1022567655:AAGjqp1EcNQKQlFlzMIr6MpLQLIoi_YJ4YM'
 #bot = telebot.TeleBot(token = TOKEN)
+TOKEN = bot_prop['TOKEN']
 
 '''
 updater = Updater(token=TOKEN, use_context=True)
@@ -180,7 +182,7 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
     username = update.effective_user.username
-    if username == 'NONE':
+    if username == None:
         update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
         return 0
     f   = open('ids.txt', 'r', encoding='utf8')
@@ -215,7 +217,7 @@ import csv
 def button(update, context):
     query = update.callback_query
     username = update.effective_user.username
-    if username == 'NONE':
+    if username == None:
         query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
         return 0
     user.clear()
