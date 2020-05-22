@@ -137,10 +137,10 @@ def button(update, context):
     val = coun %5
     print(val)
 
-    '''if(int(coun) == 25):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ5 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
-        write(query,username)
-        return 0'''
+    if(int(coun) == 25):
+        query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ግማሽ  ይህል ዳታ አስገብተዋል፣ እባክዎ ለመሸለም ተጨማሪ ዳታ ይሙሉ::")
+        #write(query,username)
+        #return 0
     if(int(coun) == 50):
         query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
         write(query,username)
