@@ -8,7 +8,7 @@ import pandas as pd
 from flask import Flask, request 
 from properties.p import Property
 
-prop = Property()
+bot_prop = Property()
 if not os.path.exists('result.csv'):
     columns = ['tweet_id','sentiment','username']
     df = pd.DataFrame(columns=columns)
