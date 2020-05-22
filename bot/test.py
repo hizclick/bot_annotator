@@ -183,7 +183,7 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 def start(update, context):
     username = update.effective_user.username
     if username == None:
-        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->Edit Profile-->Add username--Save")
         return 0
     f   = open('ids.txt', 'r', encoding='utf8')
     ids = f.read().strip().split()
@@ -218,7 +218,7 @@ def button(update, context):
     query = update.callback_query
     username = update.effective_user.username
     if username == None:
-        query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::")
+        query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save")
         return 0
     user.clear()
 
