@@ -137,6 +137,10 @@ def button(update, context):
     val = coun %5
     print(val)
 
+    if(int(coun) > 526):i
+        query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
+        return 0
+    
     if(int(coun) == 25):
         query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ግማሽ  ይህል ዳታ አስገብተዋል፣ እባክዎ ለመሸለም ተጨማሪ ዳታ ይሙሉ::")
         #write(query,username)
