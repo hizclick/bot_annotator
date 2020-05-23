@@ -137,7 +137,7 @@ def button(update, context):
     val = coun %5
     print(val)
 
-    if(int(coun) > 526):i
+    if(int(coun) > 526):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
     
