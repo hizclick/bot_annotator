@@ -80,12 +80,15 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
+    message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
+    update.message.reply_text(message)
+    return 0
     username = update.effective_user.username
     if username == None:
         update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->Edit Profile-->Add username--Save")
         return 0
     f   = open('ids.txt', 'r', encoding='utf8')
-    ids = f.read().strip().split()
+    ids = f.read().strip().split("\n")
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     text.clear()
@@ -114,6 +117,9 @@ def start(update, context):
 import csv
 
 def button(update, context):
+    message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
+    update.message.reply_text(message)
+    return 0
     query = update.callback_query
     username = update.effective_user.username
     if username == None:
@@ -123,7 +129,7 @@ def button(update, context):
 
     
     f   = open('ids.txt', 'r', encoding='utf8')
-    ids = f.read().strip().split()
+    ids = f.read().strip().split("\n")
     data2 = pd.read_csv('result.csv', encoding='utf8')
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
@@ -140,7 +146,9 @@ def button(update, context):
     if(int(coun) > 526):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
-    
+    else:
+        query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
+        return 0
     if(int(coun) == 25):
         query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ግማሽ  ይህል ዳታ አስገብተዋል፣ እባክዎ ለመሸለም ተጨማሪ ዳታ ይሙሉ::")
         #write(query,username)
