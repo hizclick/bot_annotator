@@ -1,7 +1,7 @@
 from telegram.ext import Updater
 from telegram import Poll, Bot, PollOption, User
 import os
-import telepot
+#import telepot
 import random
 #import telebot
 import pandas as pd
@@ -53,8 +53,7 @@ for item in tweet_id.keys():
 
     map[tweet_id[item]] = tweet[item]
 
-for item in tweet_id2.keys():
-    map2[tweet_id2[item]] = sentiment[item]
+
 
 
  # converting to dict 
@@ -101,12 +100,13 @@ def start(update, context):
 
     else:
         for x in tweet_id:
-            print(user_tweet_ids[username])
-            if user_tweet_ids[username]:
-                 break
-            if x not in tweet_id2 and x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                user_tweet_ids[username] = x
-                break
+            if x not in ids:
+                if username in user_tweet_ids:
+                    break
+                else:
+                    if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                        user_tweet_ids[username] = x
+                        break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
   
 
@@ -176,18 +176,23 @@ def button(update, context):
 
        
     write(query,username)
+    data2 = pd.read_csv('test_result.csv', encoding='utf8')
+    ids = data2['tweet_id']
     if(len(ids) == len(tweet_id)):
-        message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
+        message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
         query.edit_message_text(text=message)
         return 0
     else:
+
+
         for x in tweet_id:
-            if user_tweet_ids[username]:
-                break
-            if x not in tweet_id2 and x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                user_tweet_ids[username] = x
-                eval(query, user_tweet_ids[username] ,map[user_tweet_ids[username]])
-                break
+            if x not in ids:
+                if user_tweet_ids[username]:
+                    break
+                elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                    user_tweet_ids[username] = x
+                    eval(query, x ,map[user_tweet_ids[username]], username)
+                    break
       
     if val == 0:
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -203,15 +208,14 @@ def write_correct(query, username, message):
         writer.writerow([message,format(query.data),str(username)])
         user_real[username] = None
 
-def eval(query,tweet_id,tweet):
-    message = map[tweet_id]
+def eval(query,tweet_id,tweet,username):
     reply_markup = InlineKeyboardMarkup(keyboard)
-    query.edit_message_text(text=message)
+    query.edit_message_text(text=tweet)
     query.edit_message_reply_markup(reply_markup=reply_markup)
 
 def real_control():
     import random
-    f = open('test_correct.txt', encoding='utf8')
+    f = open('correct.txt', encoding='utf8')
     text = f.readlines()
     fin= []
     for x in text:
@@ -230,6 +234,7 @@ def write(query,username):
         writer.writerow([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         print([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         user_tweet_ids[username] = None
+
 
     
 
