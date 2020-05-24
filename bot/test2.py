@@ -8,6 +8,12 @@ import pandas as pd
 from flask import Flask, request 
 from properties.p import Property
 from datetime import datetime
+from threading import Lock, Thread
+lock = Lock()
+
+
+lock = Lock()
+
 
 user_real = {}
 prop = Property()
@@ -91,7 +97,7 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     ids = data2['tweet_id']
     
-       
+    lock.acquire()
     if(len(ids) == len(tweet_id)):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message) 
@@ -110,6 +116,9 @@ def start(update, context):
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
   
 
+    lock.release()
+       
+    
 
 import csv
 
