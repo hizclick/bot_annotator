@@ -94,6 +94,8 @@ def start(update, context):
         return 0
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
+
+    user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
     ids = data2['tweet_id']
     
@@ -126,6 +128,7 @@ def button(update, context):
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     query = update.callback_query
     username = update.effective_user.username
+    print('hi')
     if username == None:
         query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save")
         return 0
@@ -192,8 +195,6 @@ def button(update, context):
         query.edit_message_text(text=message)
         return 0
     else:
-
-
         for x in tweet_id:
             if x not in ids:
                 if user_tweet_ids[username]:
