@@ -15,6 +15,7 @@ lock = Lock()
 user_real = {}
 prop = Property()
 
+max_allowed_tweet = 500 # 500 tweets
 bot_prop = prop.load_property_files('bot.properties')
 
 if not os.path.exists('test_result.csv'):
@@ -38,9 +39,10 @@ if not os.path.exists('correct_result.csv'):
     df = pd.DataFrame(columns=columns)
     df.to_csv('correct_result.csv', index = False)
 
-if not os.path.exists('ids.txt'):
-    f = open('ids.txt', 'w', encoding='utf8')
+if not os.path.exists('recharge.txt'):
+    f = open('recharge.txt', 'w', encoding='utf8')
     f.close()
+
 data = pd.read_csv('test_annotation.csv', encoding='utf8')
 data2 = pd.read_csv('test_result.csv', encoding='utf8')
 
@@ -95,6 +97,11 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
 
+    if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
+        update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
+        print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
+        return 0
+
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     username = update.effective_user.username
     if username in user_tweet_ids and user_tweet_ids[username]:
@@ -130,7 +137,7 @@ def start(update, context):
                 else:
                     if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                         user_tweet_ids[username] = x
-                        write_assign(x,username)
+                        write_assign(x, username)
                         break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
 
@@ -164,86 +171,81 @@ def verify(username):
                 continue
             else:
                 count = count + 1
-        if count==3:
+        if count == 3:
             message = 'warning'
-        elif count==4:
+        elif count == 4:
             message = 'block'
             with open('blocked_user.txt', 'a', encoding='utf8') as f:
                 f.write(username)
-        return message 
-def prise(num):
+        return message
 
-    f = open('5birr.txt', 'r',encoding='utf8')
-    five = f.readlines()
-    fiv = []
-    for x in five:
-        j = x.replace(' ','')
-        fiv.append(j.rstrip('\n'))
-
-
-    fil = open('recharge.txt', 'r',encoding='utf8')
+def get_charged_cards():
+    fil = open('recharge.txt', 'r', encoding='utf8')
     recharge = fil.readlines()
     re = []
     for x in recharge:
-        j = x.replace(' ','')
+        j = x.replace(' ', '')
         re.append(j.rstrip('\n'))
-
-
-
+    return re
+def get_ten_birs():
     f2 = open('10birr.txt', 'r', encoding='utf8')
     ten = f2.readlines()
     te = []
     for x in ten:
         j = x.replace(' ','')
         te.append(j.rstrip('\n'))
+    return te
 
+def get_five_birs():
+    f = open('5birr.txt', 'r',encoding='utf8')
+    five = f.readlines()
+    fiv = []
+    for x in five:
+        j = x.replace(' ','')
+        fiv.append(j.rstrip('\n'))
+    return fiv
 
+def prise(num):
+    lock.acquire()
+    message = "እንኳ ደስ አለዎት የ" + str(num)+ "ካርድድአሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
+    fiv = get_five_birs()
+    re = get_charged_cards()
+    te = get_ten_birs()
 
-    c = 0
-    co = 0
+    number = 'ካርድቁጥር 1፦'
+    user_cards = []
+    user_cards.extend(re)
+    if len(te)<len(re):
+        for n in te:
+            if str(n) not in re:
+                user_cards.append(n)
+                fil = open('recharge.txt', 'a', encoding='utf8')
+                fil.writelines('\n' + str(n))
+                fil.close()
+                return message + str(n)
 
-    number = ''
+    cnt = 0
+    for n in fiv:
+        if str(n) not in user_cards:
+            user_cards.append(n)
+            number = number + ' ካርድ ቁጥር  2:- ' + str(n)
+            fil = open('recharge.txt', 'a', encoding='utf8')
+            fil.writelines(n + "\n")
+            fil.close()
+            cnt += 1
+            if cnt > 2:
+                return message + number
+    lock.release()
 
-    while (num>0):
-        if num==5:
-            fil = open('recharge.txt', 'r',encoding='utf8')
-            recharge = fil.readlines()
-            re = []
-            for x in recharge:
-                j = x.replace(' ','')
-                re.append(j.rstrip('\n'))
-            num = num - 5
-            for n in fiv:
-                if str(n) not in re:
-                    number = number + ' ' + n
-                    fil = open('recharge.txt', 'a',encoding='utf8')
-                    fil.writelines('\n' + n)
-                    fil.close()
-                    break
-
-        elif num>=10:
-            fil = open('recharge.txt', 'r',encoding='utf8')
-            recharge = fil.readlines()
-            re = []
-            for x in recharge:
-                j = x.replace(' ','')
-                re.append(j.rstrip('\n'))
-            for n in te:
-                if str(n)  not in re:
-                    print(n)
-                    number = number + ' ' + n
-                    fil = open('recharge.txt', 'a',encoding='utf8')
-                    fil.writelines('\n' + str(n))
-                    fil.close()
-                    break
-            num = num - 10
-            
-            
-    return number
 
 def button(update, context):
-    data2 = pd.read_csv('test_result.csv', encoding='utf8')
     query = update.callback_query
+    if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
+        query.edit_message_text(text="ትንሽ ቆይተው ይሞክሩ!")
+        print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
+        return 0
+
+    data2 = pd.read_csv('test_result.csv', encoding='utf8')
     message_id = update.callback_query.message.message_id
     print(message_id)
     username = update.effective_user.username
@@ -266,52 +268,14 @@ def button(update, context):
     coun = user.count(username) 
     val = coun %6
 
-
-
-
-
-    if(int(coun) > 526):
+    if(int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
     
-    if(int(coun) == 25):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ግማሽ  ይህል ዳታ አስገብተዋል፣ እባክዎ ለመሸለም ተጨማሪ ዳታ ይሙሉ::")
-        #write(query,username)
-        #return 0
-    if(int(coun) == 50):
+    if(int(coun) % 5 == 0):
         pr = prise(10)
         query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 150):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 275):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 525):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 1025):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 2025):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
-        return 0
-    if(int(coun) == 4025):
-        pr = prise(15)
-        query.edit_message_text(text=pr)
-        write(query,username)
+        write(query, username)
         return 0
 
     if  user_tweet_ids[username]:
@@ -378,7 +342,7 @@ def write(query,username):
         user_tweet_ids[username] = None
 
 def write_assign(tweet_id,username):
-    with open('test_start_assigns', 'a', encoding='utf8') as f:
+    with open('test_start_assigns.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([tweet_id, username])
 
