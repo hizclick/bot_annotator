@@ -94,7 +94,10 @@ def start(update, context):
         return 0
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
-
+    
+    if username in open('blocked_user.txt', encoding = 'utf8').read():
+        update.message.reply_text(text="You cant any more")
+        return 0
     user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
     ids = data2['tweet_id']
@@ -109,7 +112,7 @@ def start(update, context):
     else:
         for x in tweet_id:
             if x not in ids:
-                if username in user_tweet_ids:
+                if username in user_tweet_ids and user_tweet_ids[username] != None:
                     break
                 else:
                     if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
@@ -124,11 +127,113 @@ def start(update, context):
 
 import csv
 
+def verify(username):
+    data1 = pd.read_csv("test_correct_file.csv", encoding= 'utf8',  usecols=['tweet','class'])
+    data2 = pd.read_csv("correct_result.csv", encoding= 'utf8', usecols=['text','answer','username'])
+
+    if not os.path.exists('blocked_user.txt'):
+        f = open('ids.txt', 'w', encoding='utf8')
+        f.close()
+
+    count  = 0
+    uname = 'Hizab'
+
+    index0 = data2[data2['username'] == uname].index.values
+    if len(index0)>2:
+        for x in range(len(index0)-4, len(index0)):
+            i = index0[x]
+            text = data2['text'][index0[x]]
+
+            index1 = data1[data1['tweet']==text].index.values
+            index2 = data2[data2['text']==text].index.values
+
+            r1 = data1['class'][index1[0]] 
+            r2 = data2['answer'][index2[0]]
+            if(r1 == r2):
+                continue
+            else:
+                count = count + 1
+        if count==3:
+            message = 'warning'
+        elif count==4:
+            message = 'block'
+            with open('blocked_user.txt', 'a', encoding='utf8') as f:
+                f.write(username)
+        return message 
+def prise(num):
+
+    f = open('5birr.txt', 'r',encoding='utf8')
+    five = f.readlines()
+    fiv = []
+    for x in five:
+        j = x.replace(' ','')
+        fiv.append(j.rstrip('\n'))
+
+
+    fil = open('recharge.txt', 'r',encoding='utf8')
+    recharge = fil.readlines()
+    re = []
+    for x in recharge:
+        j = x.replace(' ','')
+        re.append(j.rstrip('\n'))
+
+
+
+    f2 = open('10birr.txt', 'r', encoding='utf8')
+    ten = f2.readlines()
+    te = []
+    for x in ten:
+        j = x.replace(' ','')
+        te.append(j.rstrip('\n'))
+
+
+
+    c = 0
+    co = 0
+
+    number = ''
+
+    while (num>0):
+        if num==5:
+            fil = open('recharge.txt', 'r',encoding='utf8')
+            recharge = fil.readlines()
+            re = []
+            for x in recharge:
+                j = x.replace(' ','')
+                re.append(j.rstrip('\n'))
+            num = num - 5
+            for n in fiv:
+                if str(n) not in re:
+                    number = number + ' ' + n
+                    fil = open('recharge.txt', 'a',encoding='utf8')
+                    fil.writelines('\n' + n)
+                    fil.close()
+                    break
+
+        elif num>=10:
+            fil = open('recharge.txt', 'r',encoding='utf8')
+            recharge = fil.readlines()
+            re = []
+            for x in recharge:
+                j = x.replace(' ','')
+                re.append(j.rstrip('\n'))
+            for n in te:
+                if str(n)  not in re:
+                    print(n)
+                    number = number + ' ' + n
+                    fil = open('recharge.txt', 'a',encoding='utf8')
+                    fil.writelines('\n' + str(n))
+                    fil.close()
+                    break
+            num = num - 10
+            
+            
+    return number
+
 def button(update, context):
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     query = update.callback_query
     username = update.effective_user.username
-    print('hi')
     if username == None:
         query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save")
         return 0
@@ -147,7 +252,10 @@ def button(update, context):
         user.append(x) 
     coun = user.count(username) 
     val = coun %6
-    print(val)
+
+
+
+
 
     if(int(coun) > 526):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
@@ -158,31 +266,38 @@ def button(update, context):
         #write(query,username)
         #return 0
     if(int(coun) == 50):
-        query.edit_message_text(text="አንኳን ደስ አሎት የ10 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(10)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 150):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ15 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 275):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ25 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 525):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ50 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 1025):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ100 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 2025):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ200 ብር ካርድ አሸናፊ ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
     if(int(coun) == 4025):
-        query.edit_message_text(text="አንኳን ደስ አሎት ተጨማሪ የ400 ብር ካርድ አሸናፊ ሆነዋል ለመሆን የሚያበቃዎትን ይህል ዳታ አስገብተዋል የሞሉትን መረጃ ትክክለኛነት አረጋግጠን በእለቱ መጨረሻ የካርድ ቁጥሩን እንልክሎታለን ፤ ለመቀጠል '/start' የሚለውን ይጫኑ")
+        pr = prise(15)
+        query.edit_message_text(text=pr)
         write(query,username)
         return 0
 
@@ -205,6 +320,12 @@ def button(update, context):
                     break
       
     if val == 0:
+        message = verify(username)  
+        if message == 'warning':
+            query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ ባክዎን ተጠንቅቀው ይሙሉ")
+        elif message == 'block':
+            query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
+            return 0
         reply_markup = InlineKeyboardMarkup(keyboard)
         user_real[username]  = real_control()
         query.edit_message_text(text=user_real[username])
