@@ -96,7 +96,6 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
-
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
@@ -184,8 +183,11 @@ def get_charged_cards():
     recharge = fil.readlines()
     re = []
     for x in recharge:
-        j = x.replace(' ', '')
+        j = x.replace(' ','')
         re.append(j.rstrip('\n'))
+    while('' in re) : 
+        re.remove('') 
+    print(re)
     return re
 def get_ten_birs():
     f2 = open('10birr.txt', 'r', encoding='utf8')
@@ -194,6 +196,9 @@ def get_ten_birs():
     for x in ten:
         j = x.replace(' ','')
         te.append(j.rstrip('\n'))
+    while('' in te) : 
+        te.remove('') 
+ 
     return te
 
 def get_five_birs():
@@ -201,8 +206,10 @@ def get_five_birs():
     five = f.readlines()
     fiv = []
     for x in five:
-        j = x.replace(' ','')
+        j = x.strip()
         fiv.append(j.rstrip('\n'))
+    while('' in fiv) : 
+        fiv.remove('') 
     return fiv
 
 def prise(num):
