@@ -9,11 +9,11 @@ from flask import Flask, request
 from properties.p import Property
 from datetime import datetime
 from threading import Lock, Thread
+import uuid
+
 lock = Lock()
-
-
-lock = Lock()
-
+session = uuid.uuid1()
+print (session)
 
 user_real = {}
 prop = Property()
@@ -25,11 +25,21 @@ if not os.path.exists('test_result.csv'):
     df = pd.DataFrame(columns=columns)
     df.to_csv('test_result.csv', index = False)
 
+if not os.path.exists('test_start_assigns.csv'):
+    columns = ['tweet_id','username']
+    df = pd.DataFrame(columns=columns)
+    df.to_csv('test_start_assigns.csv', index = False)
+
+if not os.path.exists('test_correct_file.csv'):
+    columns = ['tweet','class']
+    df = pd.DataFrame(columns=columns)
+    df.to_csv('test_correct_file.csv', index = False)
+
 
 if not os.path.exists('correct_result.csv'):
     columns = ['text','answer','username']
     df = pd.DataFrame(columns=columns)
-    df.to_csv('test_correct_result.csv', index = False)
+    df.to_csv('correct_result.csv', index = False)
 
 if not os.path.exists('ids.txt'):
     f = open('ids.txt', 'w', encoding='utf8')
@@ -87,16 +97,22 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
+
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     username = update.effective_user.username
+    if username in user_tweet_ids and user_tweet_ids[username]:
+        update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
+        return 0
+   # else:
+
     if username == None:
-        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->Edit Profile-->Add username--Save")
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here ")
         return 0
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
     
     if username in open('blocked_user.txt', encoding = 'utf8').read():
-        update.message.reply_text(text="You cant any more")
+        update.message.reply_text(text="please contact us via email: hizkiel.mitiku@studio.unibo.it")
         return 0
     user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -104,7 +120,7 @@ def start(update, context):
     
     lock.acquire()
     if(len(ids) == len(tweet_id)):
-        message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቆታለን፤ እናመሰግናለን!!'
+        message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message) 
         return 0
 
@@ -117,9 +133,9 @@ def start(update, context):
                 else:
                     if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                         user_tweet_ids[username] = x
+                        write_assign(x,username)
                         break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
-  
 
     lock.release()
        
@@ -136,9 +152,7 @@ def verify(username):
         f.close()
 
     count  = 0
-    uname = 'Hizab'
-
-    index0 = data2[data2['username'] == uname].index.values
+    index0 = data2[data2['username'] == username].index.values
     if len(index0)>2:
         for x in range(len(index0)-4, len(index0)):
             i = index0[x]
@@ -233,6 +247,8 @@ def prise(num):
 def button(update, context):
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     query = update.callback_query
+    message_id = update.callback_query.message.message_id
+    print(message_id)
     username = update.effective_user.username
     if username == None:
         query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save")
@@ -301,8 +317,9 @@ def button(update, context):
         write(query,username)
         return 0
 
-       
-    write(query,username)
+    if  user_tweet_ids[username]:
+        write(query,username)
+
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
     ids = data2['tweet_id']
     if(len(ids) == len(tweet_id)):
@@ -316,6 +333,7 @@ def button(update, context):
                     break
                 elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                     user_tweet_ids[username] = x
+                    write_assign(x, username)
                     eval(query, x ,map[user_tweet_ids[username]], username)
                     break
       
@@ -356,18 +374,17 @@ def real_control():
    
 
 def write(query,username):
-    print('hihih')
-    #for key in text:
-    #text[key] = format(query.data)
-    #print(text)
     with open('test_result.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         print([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         user_tweet_ids[username] = None
 
+def write_assign(tweet_id,username):
+    with open('test_start_assigns', 'a', encoding='utf8') as f:
+        writer = csv.writer(f)
+        writer.writerow([tweet_id, username])
 
-    
 
 def help(update, context):
     update.message.reply_text("Use /start to test this bot.")
@@ -378,6 +395,10 @@ def end(update, context):
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+    message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
+    query = update.callback_query
+    query.edit_message_text(text=message)
+    return 0
 
 def instruction(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text='ጽሁፉ ገምቢ ከሆነ "ገምቢ" የሚለውን፣ አፍራሽ ከሆነ "አፍራሽ" የሚለውን፣ ገለልትኛ "ገለልተኛ" የሚለውን ፣ የገምቢ እና የአፍራሽ ቅልቅል ከሆነ "ቅልቅል" የሚለውን ይምረጡ፡፡ ይህንን መረጃ ሲሞሉ በትክክል በመለሱት ጥያቄ ልክ በዕለቱ መጨረሻ በእርስዎ "user name" በኩል የሞባይል ካርድ ሽልማት ይላክለዎታል። ለበለጠ መረጃ https://annotation-wq.github.io/')
