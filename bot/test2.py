@@ -9,11 +9,8 @@ from flask import Flask, request
 from properties.p import Property
 from datetime import datetime
 from threading import Lock, Thread
-import uuid
 
 lock = Lock()
-session = uuid.uuid1()
-print (session)
 
 user_real = {}
 prop = Property()
