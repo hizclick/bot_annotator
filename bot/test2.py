@@ -9,6 +9,14 @@ from flask import Flask, request
 from properties.p import Property
 from datetime import datetime
 from threading import Lock, Thread
+from datetime import date
+
+
+# Import smtplib for the actual sending function
+import smtplib
+
+# Import the email modules we'll need
+from email.message import EmailMessage
 
 lock = Lock()
 
@@ -96,6 +104,7 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
+    print('try')
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
@@ -109,7 +118,7 @@ def start(update, context):
    # else:
 
     if username == None:
-        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here ")
+        update.message.reply_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
@@ -158,7 +167,6 @@ def verify(username):
     index0 = data2[data2['username'] == username].index.values
     if len(index0)>2:
         for x in range(len(index0)-4, len(index0)):
-            i = index0[x]
             text = data2['text'][index0[x]]
 
             index1 = data1[data1['tweet']==text].index.values
@@ -187,7 +195,6 @@ def get_charged_cards():
         re.append(j.rstrip('\n'))
     while('' in re) : 
         re.remove('') 
-    print(re)
     return re
 def get_ten_birs():
     f2 = open('10birr.txt', 'r', encoding='utf8')
@@ -209,12 +216,15 @@ def get_five_birs():
         j = x.strip()
         fiv.append(j.rstrip('\n'))
     while('' in fiv) : 
-        fiv.remove('') 
+        fiv.remove('')
+    
     return fiv
 
 def prise(num):
     lock.acquire()
-    message = "እንኳ ደስ አለዎት የ" + str(num)+ "ካርድድአሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
+    today = date.today()
+
+    message = "እንኳ ደስ አለዎት የ" + str(num)+ "ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
     fiv = get_five_birs()
     re = get_charged_cards()
     te = get_ten_birs()
@@ -222,12 +232,14 @@ def prise(num):
     number = 'ካርድቁጥር 1፦'
     user_cards = []
     user_cards.extend(re)
-    if len(te)<len(re):
+    if len(te)>len(re):
         for n in te:
             if str(n) not in re:
                 user_cards.append(n)
+                today = date.today()
+                d1 = today.strftime("%d/%m/%Y")
                 fil = open('recharge.txt', 'a', encoding='utf8')
-                fil.writelines('\n' + str(n))
+                fil.writelines(str(n) + '  ' + d1 + '\n')
                 fil.close()
                 return message + str(n)
 
@@ -237,7 +249,7 @@ def prise(num):
             user_cards.append(n)
             number = number + ' ካርድ ቁጥር  2:- ' + str(n)
             fil = open('recharge.txt', 'a', encoding='utf8')
-            fil.writelines(n + "\n")
+            fil.writelines('' + today + "\n" )
             fil.close()
             cnt += 1
             if cnt > 2:
@@ -257,7 +269,7 @@ def button(update, context):
     print(message_id)
     username = update.effective_user.username
     if username == None:
-        query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save")
+        query.edit_message_text(text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save. ለበለጠ መረጃ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0
     user.clear()
 
@@ -279,7 +291,7 @@ def button(update, context):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
     
-    if(int(coun) % 5 == 0):
+    if(int(coun) % 6 == 0 and int(coun) != 0):
         pr = prise(10)
         query.edit_message_text(text=pr)
         write(query, username)
@@ -365,7 +377,7 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
     message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
     query = update.callback_query
-    query.edit_message_text(text=message)
+    update.message.reply_text(text=message)
     return 0
 
 def instruction(update, context):
