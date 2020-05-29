@@ -107,7 +107,7 @@ def start(update, context):
     print('try')
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
-        print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
+        send_email()
         return 0
 
     data2 = pd.read_csv('test_result.csv', encoding='utf8')
@@ -154,6 +154,24 @@ def start(update, context):
     
 
 import csv
+def send_email():
+    import smtplib, ssl
+
+    port = 587  # For starttls
+    smtp_server = "smtp.gmail.com"
+    sender_email = "tellebott@gmail.com"
+    receiver_email = "hizclick@gmail.com"
+    password = "Hizbot2020"
+    message = """ ካርድ አልቋል፡፡"""
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.ehlo()  # Can be omitted
+        server.starttls(context=context)
+        server.ehlo()  # Can be omitted
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, message)
+
 
 def verify(username):
     data1 = pd.read_csv("test_correct_file.csv", encoding= 'utf8',  usecols=['tweet','class'])
