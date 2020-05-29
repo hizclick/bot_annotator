@@ -1,5 +1,6 @@
+from telegram.error import ChatMigrated, BadRequest, Unauthorized, TimedOut, NetworkError
 from telegram.ext import Updater
-from telegram import Poll, Bot, PollOption, User
+from telegram import Poll, Bot, PollOption, User, TelegramError
 import os
 #import telepot
 import random
@@ -10,6 +11,7 @@ from properties.p import Property
 from datetime import datetime
 from threading import Lock, Thread
 from datetime import date
+import time
 
 
 # Import smtplib for the actual sending function
@@ -17,6 +19,8 @@ import smtplib
 
 # Import the email modules we'll need
 from email.message import EmailMessage
+
+from telegram.utils.request import Request
 
 lock = Lock()
 
@@ -26,10 +30,19 @@ prop = Property()
 max_allowed_tweet = 500 # 500 tweets
 bot_prop = prop.load_property_files('bot.properties')
 
-if not os.path.exists('test_result.csv'):
-    columns = ['tweet_id','sentiment','username']
+tweet_id2 = []
+tweet_id_time = {}
+if not os.path.exists('out_test_result.csv'):
+    columns = ['tweet_id','sentiment','tweet','username']
     df = pd.DataFrame(columns=columns)
-    df.to_csv('test_result.csv', index = False)
+    df.to_csv('out_test_result.csv', index = False)
+else:
+    data2 = pd.read_csv('out_test_result.csv', encoding='utf8')
+    tweet_id2 = data2['tweet_id'].tolist()
+    sentiment = data2['sentiment']
+    count = data2['username'].value_counts()
+    users = data2['username']
+
 
 if not os.path.exists('test_start_assigns.csv'):
     columns = ['tweet_id','username']
@@ -50,18 +63,11 @@ if not os.path.exists('correct_result.csv'):
 if not os.path.exists('recharge.txt'):
     f = open('recharge.txt', 'w', encoding='utf8')
     f.close()
+if not os.path.exists('blocked_user.txt'):
+    f = open('blocked_user.txt', 'w', encoding='utf8')
+    f.close()
 
 data = pd.read_csv('test_annotation.csv', encoding='utf8')
-data2 = pd.read_csv('test_result.csv', encoding='utf8')
-
-tweet_id2 = data2['tweet_id']
-sentiment = data2['sentiment']
-
-count = data2['username'].value_counts()
-
-server= Flask(__name__)
-
-
 tweet_id = data['tweet_id']
 
 
@@ -104,14 +110,17 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
                  InlineKeyboardButton("ቅልቅል", callback_data='Mix')]]
 
 def start(update, context):
-    print('try')
+
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         send_email()
         return 0
 
-    data2 = pd.read_csv('test_result.csv', encoding='utf8')
     username = update.effective_user.username
+
+    del_timeout_users()
+
+
     if username in user_tweet_ids and user_tweet_ids[username]:
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
         return 0
@@ -128,10 +137,9 @@ def start(update, context):
         return 0
     user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
-    ids = data2['tweet_id']
     
     lock.acquire()
-    if(len(ids) == len(tweet_id)):
+    if(len(tweet_id2) == len(tweet_id)):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message) 
         return 0
@@ -139,13 +147,14 @@ def start(update, context):
 
     else:
         for x in tweet_id:
-            if x not in ids:
+            if x not in tweet_id2:
                 if username in user_tweet_ids and user_tweet_ids[username] != None:
                     break
                 else:
                     if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                         user_tweet_ids[username] = x
-                        write_assign(x, username)
+                        tweet_id2.append(x)
+                        tweet_id_time[username] = time.time()
                         break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
 
@@ -154,6 +163,20 @@ def start(update, context):
     
 
 import csv
+
+def del_timeout_users():
+    expired_users = []
+    for uname in tweet_id_time:
+        current_time  = time.time()
+        if current_time - tweet_id_time[uname] > 600:
+            #tweet_id_time[username] = None
+            expired_users.append(uname)
+            tweet_id2.remove(user_tweet_ids[uname])
+            user_tweet_ids[uname] = None
+
+    for expired_user in expired_users:
+        del tweet_id_time[expired_user]
+
 def send_email():
     import smtplib, ssl
 
@@ -238,7 +261,7 @@ def get_five_birs():
     
     return fiv
 
-def prise(num):
+def prise(num, username):
     lock.acquire()
     today = date.today()
 
@@ -267,7 +290,7 @@ def prise(num):
             user_cards.append(n)
             number = number + ' ካርድ ቁጥር  2:- ' + str(n)
             fil = open('recharge.txt', 'a', encoding='utf8')
-            fil.writelines('' + today + "\n" )
+            fil.writelines(str(n)+ '' + today + "\n" )
             fil.close()
             cnt += 1
             if cnt > 2:
@@ -276,13 +299,15 @@ def prise(num):
 
 
 def button(update, context):
+    del_timeout_users()
+
     query = update.callback_query
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         query.edit_message_text(text="ትንሽ ቆይተው ይሞክሩ!")
         print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
+        send_email()
         return 0
 
-    data2 = pd.read_csv('test_result.csv', encoding='utf8')
     message_id = update.callback_query.message.message_id
     print(message_id)
     username = update.effective_user.username
@@ -295,14 +320,13 @@ def button(update, context):
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
 
-    ids = data2['tweet_id']
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     query.answer()
     user.clear()
-    for x in data2['username']:
+    for x in users:
         user.append(x) 
-    coun = user.count(username) 
+    coun = user.count(username)  #TODO
     val = coun %6
 
     if(int(coun) > max_allowed_tweet):
@@ -310,7 +334,7 @@ def button(update, context):
         return 0
     
     if(int(coun) % 6 == 0 and int(coun) != 0):
-        pr = prise(10)
+        pr = prise(10, username)
         query.edit_message_text(text=pr)
         write(query, username)
         return 0
@@ -318,7 +342,7 @@ def button(update, context):
     if  user_tweet_ids[username]:
         write(query,username)
 
-    data2 = pd.read_csv('test_result.csv', encoding='utf8')
+    data2 = pd.read_csv('out_test_result.csv', encoding='utf8')
     ids = data2['tweet_id']
     if(len(ids) == len(tweet_id)):
         message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
@@ -331,7 +355,10 @@ def button(update, context):
                     break
                 elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                     user_tweet_ids[username] = x
-                    write_assign(x, username)
+                    tweet_id2.append(x)
+                    tweet_id_time[username] = time.time()
+
+
                     eval(query, x ,map[user_tweet_ids[username]], username)
                     break
       
@@ -372,16 +399,11 @@ def real_control():
    
 
 def write(query,username):
-    with open('test_result.csv', 'a', encoding='utf8') as f:
+    with open('out_test_result.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         print([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         user_tweet_ids[username] = None
-
-def write_assign(tweet_id,username):
-    with open('test_start_assigns.csv', 'a', encoding='utf8') as f:
-        writer = csv.writer(f)
-        writer.writerow([tweet_id, username])
 
 
 def help(update, context):
@@ -391,11 +413,30 @@ def end(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text='ስለ ትብብርዎ እናመሰግናለን!')
 
 def error(update, context):
-    """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, context.error)
-    message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
-    query = update.callback_query
-    update.message.reply_text(text=message)
+    try:
+        raise error
+    except Unauthorized:
+        logging.debug("TELEGRAM ERROR: Unauthorized - %s" % error)
+    except BadRequest:
+        logging.debug("TELEGRAM ERROR: Bad Request - %s" % error)
+    except TimedOut:
+        logging.debug("TELEGRAM ERROR: Slow connection problem - %s" % error)
+        message = 'Timeout, /start የሚለውንንይሞክሩ!'
+        query = update.callback_query
+        update.message.reply_text(text=message)
+    except NetworkError:
+        logging.debug("TELEGRAM ERROR: Other connection problems - %s" % error)
+    except ChatMigrated as e:
+        logging.debug("TELEGRAM ERROR: Chat ID migrated?! - %s" % error)
+    except TelegramError:
+        logging.debug("TELEGRAM ERROR: Other error - %s" % error)
+    except:
+        logging.debug("TELEGRAM ERROR: Unknown - %s" % error)
+        """Log Errors caused by Updates."""
+        logger.warning('Update "%s" caused error "%s"', update, context.error)
+        message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
+        query = update.callback_query
+        update.message.reply_text(text=message)
     return 0
 
 def instruction(update, context):
@@ -413,23 +454,11 @@ def main():
     updater.dispatcher.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling()
+    updater.start_polling(timeout=10)
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
     updater.idle()
-
-@server.route("/" + TOKEN, methods = ['POST'])
-def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode('utf-8'))])
-    return "!", 200
-
-@server.route("/")
-def webhook():
-    bot.remove_webhook()
-    bot.set_webhook(url="https://dataannotatort.com/" + TOKEN)
-    return "!", 200
-
 
 if __name__ == '__main__':
     main()
