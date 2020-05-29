@@ -32,42 +32,43 @@ bot_prop = prop.load_property_files('bot.properties')
 
 tweet_id2 = []
 tweet_id_time = {}
-if not os.path.exists('out_test_result.csv'):
+users = []
+if not os.path.exists('annotated_tweets.csv'):
     columns = ['tweet_id','sentiment','tweet','username']
     df = pd.DataFrame(columns=columns)
-    df.to_csv('out_test_result.csv', index = False)
+    df.to_csv('annotated_tweets.csv', index = False)
 else:
-    data2 = pd.read_csv('out_test_result.csv', encoding='utf8')
+    data2 = pd.read_csv('annotated_tweets.csv', encoding='utf8')
     tweet_id2 = data2['tweet_id'].tolist()
     sentiment = data2['sentiment']
     count = data2['username'].value_counts()
-    users = data2['username']
+    users = data2['username'].tolist
 
 
-if not os.path.exists('test_start_assigns.csv'):
-    columns = ['tweet_id','username']
-    df = pd.DataFrame(columns=columns)
-    df.to_csv('test_start_assigns.csv', index = False)
-
-if not os.path.exists('test_correct_file.csv'):
+if not os.path.exists('control_questions.csv'):
     columns = ['tweet','class']
     df = pd.DataFrame(columns=columns)
-    df.to_csv('test_correct_file.csv', index = False)
+    df.to_csv('control_questions.csv', index = False)
 
 
-if not os.path.exists('correct_result.csv'):
+if not os.path.exists('control_answers.csv'):
     columns = ['text','answer','username']
     df = pd.DataFrame(columns=columns)
-    df.to_csv('correct_result.csv', index = False)
+    df.to_csv('control_answers.csv', index = False)
 
-if not os.path.exists('recharge.txt'):
-    f = open('recharge.txt', 'w', encoding='utf8')
+if not os.path.exists('rewarded_cards.txt'):
+    f = open('rewarded_cards.txt', 'w', encoding='utf8')
     f.close()
+
+blocked_users = []
 if not os.path.exists('blocked_user.txt'):
     f = open('blocked_user.txt', 'w', encoding='utf8')
     f.close()
+else:
+    blocked_user = open('blocked_user.txt', 'r').read()
 
-data = pd.read_csv('test_annotation.csv', encoding='utf8')
+
+data = pd.read_csv('raw_tweets.csv', encoding='utf8', header = 0)
 tweet_id = data['tweet_id']
 
 
@@ -132,7 +133,7 @@ def start(update, context):
     #f   = open('ids.txt', 'r', encoding='utf8')
     #ids = f.read().strip().split("\n")
     
-    if username in open('blocked_user.txt', encoding = 'utf8').read():
+    if username in blocked_users:
         update.message.reply_text(text="please contact us via email: hizkiel.mitiku@studio.unibo.it")
         return 0
     user.clear()
@@ -169,7 +170,6 @@ def del_timeout_users():
     for uname in tweet_id_time:
         current_time  = time.time()
         if current_time - tweet_id_time[uname] > 600:
-            #tweet_id_time[username] = None
             expired_users.append(uname)
             tweet_id2.remove(user_tweet_ids[uname])
             user_tweet_ids[uname] = None
@@ -197,18 +197,14 @@ def send_email():
 
 
 def verify(username):
-    data1 = pd.read_csv("test_correct_file.csv", encoding= 'utf8',  usecols=['tweet','class'])
-    data2 = pd.read_csv("correct_result.csv", encoding= 'utf8', usecols=['text','answer','username'])
+    data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
+    data2 = pd.read_csv("control_answers.csv", encoding= 'utf8', usecols=['text','answer','username'])
 
-    if not os.path.exists('blocked_user.txt'):
-        f = open('ids.txt', 'w', encoding='utf8')
-        f.close()
-
-    count  = 0
-    index0 = data2[data2['username'] == username].index.values
-    if len(index0)>2:
-        for x in range(len(index0)-4, len(index0)):
-            text = data2['text'][index0[x]]
+    count = -1
+    user_annotation = data2[data2['username'] == username].index.values
+    if len(user_annotation)>2:
+        for x in range(len(user_annotation)-4, len(user_annotation)):
+            text = data2['text'][user_annotation[x]]
 
             index1 = data1[data1['tweet']==text].index.values
             index2 = data2[data2['text']==text].index.values
@@ -224,14 +220,15 @@ def verify(username):
         elif count == 4:
             message = 'block'
             with open('blocked_user.txt', 'a', encoding='utf8') as f:
+                blocked_users.append(username)
                 f.write(username)
         return message
 
 def get_charged_cards():
-    fil = open('recharge.txt', 'r', encoding='utf8')
-    recharge = fil.readlines()
+    fil = open('rewarded_cards.txt', 'r', encoding='utf8')
+    rewarded_cards = fil.readlines()
     re = []
-    for x in recharge:
+    for x in rewarded_cards:
         j = x.replace(' ','')
         re.append(j.rstrip('\n'))
     while('' in re) : 
@@ -278,9 +275,8 @@ def prise(num, username):
             if str(n) not in re:
                 user_cards.append(n)
                 today = date.today()
-                d1 = today.strftime("%d/%m/%Y")
-                fil = open('recharge.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '  ' + d1 + '\n')
+                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+                fil.writelines(str(n) + '  ' + time.time() + '\n')
                 fil.close()
                 return message + str(n)
 
@@ -289,8 +285,8 @@ def prise(num, username):
         if str(n) not in user_cards:
             user_cards.append(n)
             number = number + ' ካርድ ቁጥር  2:- ' + str(n)
-            fil = open('recharge.txt', 'a', encoding='utf8')
-            fil.writelines(str(n)+ '' + today + "\n" )
+            fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+            fil.writelines(str(n)+ '' + time.time() + "\n")
             fil.close()
             cnt += 1
             if cnt > 2:
@@ -342,23 +338,20 @@ def button(update, context):
     if  user_tweet_ids[username]:
         write(query,username)
 
-    data2 = pd.read_csv('out_test_result.csv', encoding='utf8')
-    ids = data2['tweet_id']
-    if(len(ids) == len(tweet_id)):
+
+    if(len(tweet_id2) == len(tweet_id)):
         message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
         query.edit_message_text(text=message)
         return 0
     else:
         for x in tweet_id:
-            if x not in ids:
+            if x not in tweet_id2:
                 if user_tweet_ids[username]:
                     break
                 elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                     user_tweet_ids[username] = x
                     tweet_id2.append(x)
                     tweet_id_time[username] = time.time()
-
-
                     eval(query, x ,map[user_tweet_ids[username]], username)
                     break
       
@@ -377,7 +370,7 @@ def button(update, context):
 
         
 def write_correct(query, username, message):
-    with open('correct_result.csv', 'a', encoding='utf8') as f:
+    with open('control_answers.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([message,format(query.data),str(username)])
         user_real[username] = None
@@ -389,7 +382,7 @@ def eval(query,tweet_id,tweet,username):
 
 def real_control():
     import random
-    f = open('correct.txt', encoding='utf8')
+    f = open('control_questions.csv', encoding='utf8')
     text = f.readlines()
     fin= []
     for x in text:
@@ -399,7 +392,7 @@ def real_control():
    
 
 def write(query,username):
-    with open('out_test_result.csv', 'a', encoding='utf8') as f:
+    with open('annotated_tweets.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
         print([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
@@ -436,7 +429,7 @@ def error(update, context):
         logger.warning('Update "%s" caused error "%s"', update, context.error)
         message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
         query = update.callback_query
-        update.message.reply_text(text=message)
+        query.edit_message_text(text=message)
     return 0
 
 def instruction(update, context):
