@@ -44,17 +44,28 @@ else:
     count = data2['username'].value_counts()
     users = data2['username'].tolist
 
-
+ans = list()
 if not os.path.exists('control_questions.csv'):
     columns = ['tweet','class']
     df = pd.DataFrame(columns=columns)
     df.to_csv('control_questions.csv', index = False)
+else:
+     control_questions = pd.read_csv('control_questions.csv', encoding='utf8')
+     for item in zip(control_questions['﻿tweet'], control_questions['class']):
+         ans.append((item[0], item[1]))
 
 
+
+control = []
 if not os.path.exists('control_answers.csv'):
     columns = ['text','answer','username']
     df = pd.DataFrame(columns=columns)
     df.to_csv('control_answers.csv', index = False)
+else:
+    control_answers = pd.read_csv('control_answers.csv', encoding='utf8')
+    for item in zip(control_questions['tweet'], control_questions['answer'], control_questions['username']):
+        control.append((item[0], item[1], item[2]))
+
 
 if not os.path.exists('rewarded_cards.txt'):
     f = open('rewarded_cards.txt', 'w', encoding='utf8')
@@ -176,7 +187,6 @@ def del_timeout_users():
 
     for expired_user in expired_users:
         del tweet_id_time[expired_user]
-
 def send_email():
     import smtplib, ssl
 
@@ -199,7 +209,31 @@ def get_control_question():
     return control_question
 
 def verify(username):
-    data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
+    couter = 0
+    message = ''
+    user_tweet = []
+    for item in control:
+        if username in item[2]:
+            user_tweet.append((item[0], item[1]))
+
+    if len(user_tweet) > 2:
+        for x in range(len(control) - 4, len(control)):
+            for item in ans:
+                if control[x][:2] in ans:
+                    break
+                else:
+                    couter = couter + 1
+    if couter == 3:
+        message = 'warning'
+        return message
+    elif couter == 4:
+        message = 'block'
+        with open('blocked_user.txt', 'a', encoding='utf8') as f:
+            blocked_users.append(username)
+            f.write(username)
+        return message
+    return messsage
+   '''data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
     data2 = pd.read_csv("control_answers.csv", encoding= 'utf8', usecols=['text','answer','username'])
 
     count = -1
@@ -224,7 +258,7 @@ def verify(username):
             with open('blocked_user.txt', 'a', encoding='utf8') as f:
                 blocked_users.append(username)
                 f.write(username)
-        return message
+        return message'''
 
 def get_charged_cards():
     fil = open('rewarded_cards.txt', 'r', encoding='utf8')
@@ -375,6 +409,7 @@ def write_correct(query, username, message):
     with open('control_answers.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
         writer.writerow([message,format(query.data),str(username)])
+        control.append((message,format(query.data),str(username)))
         user_real[username] = None
 
 def eval(query,tweet_id,tweet,username):
@@ -384,12 +419,9 @@ def eval(query,tweet_id,tweet,username):
 
 def real_control():
     import random
-    data = get_control_question()
     tweet = list()
-    # Select one row randomaly using sample()
-    # without give any parameters
-    for tweets in data['tweet']:
-        tweet.append(tweets)
+    for item in ans:
+        tweet.append(item[0])
     return random.choice(tweet)
 
 

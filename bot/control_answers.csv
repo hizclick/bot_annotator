@@ -1,2 +1,8 @@
-text,answer,username
-"""እንስራ፣ እንጠንክር፣ እንተባበር,"",Pos",Mix,Hizab
+tweet,answer,username
+ይህንን ይህንን መኪና እወዳለሁ ፡፡,Pos, Hizab
+ሁሉም ነገር ጥሩ ነው።,Neg, Hizab
+ፍጹም ቆንጆ ነው፡፡,Neg, Hizab
+ሙዚቃውን እወዳለሁ።,Pos, Hizab
+ድንቅ ነህ፡፡,Neg, Hizab
+እሷ አስገራሚ ናት ፡፡,Neg, Hizab
+እሱ አስደናቂ ነው ፡፡,Neg, Hizab
