@@ -194,7 +194,9 @@ def send_email():
         server.ehlo()  # Can be omitted
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message)
-
+def get_control_question():
+    control_question = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
+    return control_question
 
 def verify(username):
     data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
@@ -382,12 +384,14 @@ def eval(query,tweet_id,tweet,username):
 
 def real_control():
     import random
-    f = open('control_questions.csv', encoding='utf8')
-    text = f.readlines()
-    fin= []
-    for x in text:
-        fin.append(x.replace('\n',''))
-    return random.choice(fin)
+    data = get_control_question()
+    tweet = list()
+    # Select one row randomaly using sample()
+    # without give any parameters
+    for tweets in data['tweet']:
+        tweet.append(tweets)
+    return random.choice(tweet)
+
 
    
 
