@@ -30,7 +30,7 @@ prop = Property()
 max_allowed_tweet = 500 # 500 tweets
 bot_prop = prop.load_property_files('bot.properties')
 
-tweet_id2 = []
+annotated_tweet_ids = []
 tweet_id_time = {}
 users = []
 if not os.path.exists('annotated_tweets.csv'):
@@ -39,10 +39,10 @@ if not os.path.exists('annotated_tweets.csv'):
     df.to_csv('annotated_tweets.csv', index = False)
 else:
     data2 = pd.read_csv('annotated_tweets.csv', encoding='utf8')
-    tweet_id2 = data2['tweet_id'].tolist()
+    annotated_tweet_ids = data2['tweet_id'].apply(lambda x: str(x)).tolist()
     sentiment = data2['sentiment']
     count = data2['username'].value_counts()
-    users = data2['username'].tolist
+    users = data2['username'].tolist()
 
 ans = list()
 if not os.path.exists('control_questions.csv'):
@@ -51,19 +51,19 @@ if not os.path.exists('control_questions.csv'):
     df.to_csv('control_questions.csv', index = False)
 else:
      control_questions = pd.read_csv('control_questions.csv', encoding='utf8')
-     for item in zip(control_questions['﻿tweet'], control_questions['class']):
+     for item in zip(control_questions['tweet'], control_questions['class']):
          ans.append((item[0], item[1]))
 
 
 
 control = []
 if not os.path.exists('control_answers.csv'):
-    columns = ['text','answer','username']
+    columns = ['tweet','answer','username']
     df = pd.DataFrame(columns=columns)
     df.to_csv('control_answers.csv', index = False)
 else:
     control_answers = pd.read_csv('control_answers.csv', encoding='utf8')
-    for item in zip(control_questions['tweet'], control_questions['answer'], control_questions['username']):
+    for item in zip(control_answers['tweet'], control_answers['answer'], control_answers['username']):
         control.append((item[0], item[1], item[2]))
 
 
@@ -80,19 +80,19 @@ else:
 
 
 data = pd.read_csv('raw_tweets.csv', encoding='utf8', header = 0)
-tweet_id = data['tweet_id']
+raw_tweet_ids = data['tweet_id']
 
 
 tweet = data['tweet']
 user = []
 
-user_tweet_ids = {} #username1 = tweet_id1, username2 = tweet_id2
+user_tweet_ids = {} #username1 = tweet_id1, username2 = annotated_tweet_ids
 
 map = dict()
 map2 = dict()
-for item in tweet_id.keys():
+for item in raw_tweet_ids.keys():
 
-    map[tweet_id[item]] = tweet[item]
+    map[raw_tweet_ids[item]] = tweet[item]
 
 
 
@@ -151,21 +151,21 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     lock.acquire()
-    if(len(tweet_id2) == len(tweet_id)):
+    if(len(annotated_tweet_ids) == len(raw_tweet_ids)):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message) 
         return 0
 
 
     else:
-        for x in tweet_id:
-            if x not in tweet_id2:
+        for x in raw_tweet_ids:
+            if x not in annotated_tweet_ids:
                 if username in user_tweet_ids and user_tweet_ids[username] != None:
                     break
                 else:
                     if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                         user_tweet_ids[username] = x
-                        tweet_id2.append(x)
+                        annotated_tweet_ids.append(x)
                         tweet_id_time[username] = time.time()
                         break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
@@ -182,7 +182,7 @@ def del_timeout_users():
         current_time  = time.time()
         if current_time - tweet_id_time[uname] > 600:
             expired_users.append(uname)
-            tweet_id2.remove(user_tweet_ids[uname])
+            annotated_tweet_ids.remove(user_tweet_ids[uname])
             user_tweet_ids[uname] = None
 
     for expired_user in expired_users:
@@ -195,7 +195,7 @@ def send_email():
     sender_email = "tellebott@gmail.com"
     receiver_email = "hizclick@gmail.com"
     password = "Hizbot2020"
-    message = """ ካርድ አልቋል፡፡"""
+    message = """no more mobile cards"""
 
     context = ssl.create_default_context()
     with smtplib.SMTP(smtp_server, port) as server:
@@ -208,29 +208,31 @@ def get_control_question():
     control_question = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
     return control_question
 
-def verify(username):
+def verify (username):
     counter = 0
-    message = ''
+    message = None
     user_tweet = []
     for item in control:
-        if username in item[2]:
+        if username == item[2]:
             user_tweet.append((item[0], item[1]))
 
-    if len(user_tweet) > 2:
-        for x in range(len(control) - 4, len(control)):
-            for item in ans:
-                if control[x][:2] in ans:
-                    break
-                else:
-                    counter = counter + 1
-    if counter == 3:
-        message = 'warning'
-    elif counter == 4:
-        message = 'block'
+    if len(user_tweet) > 2: # more than two mistakes
+        for x in range(max(len(user_tweet) - 4, 0), len(user_tweet)):
+            if user_tweet[x] in ans:
+                break
+            else:
+                counter = counter + 1
+            if counter == 3:
+                message = "warning"
+            elif counter > 3:
+                message = "block"
+
+    if counter >= 4:
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
             f.write(username)
     return message
+
 '''data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
     data2 = pd.read_csv("control_answers.csv", encoding= 'utf8', usecols=['text','answer','username'])
 
@@ -296,7 +298,7 @@ def prise(num, username):
     lock.acquire()
     today = date.today()
 
-    message = "እንኳ ደስ አለዎት የ" + str(num)+ "ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
+    message = "እንኳ ደስ አለዎት የ" + str(num) + " ብር ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
     fiv = get_five_birs()
     re = get_charged_cards()
     te = get_ten_birs()
@@ -308,9 +310,8 @@ def prise(num, username):
         for n in te:
             if str(n) not in re:
                 user_cards.append(n)
-                today = date.today()
                 fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '  ' + time.time() + '\n')
+                fil.writelines(str(n) + '  ' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
                 fil.close()
                 return message + str(n)
 
@@ -320,7 +321,7 @@ def prise(num, username):
             user_cards.append(n)
             number = number + ' ካርድ ቁጥር  2:- ' + str(n)
             fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-            fil.writelines(str(n)+ '' + time.time() + "\n")
+            fil.writelines(str(n)+ '' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
             fil.close()
             cnt += 1
             if cnt > 2:
@@ -362,8 +363,9 @@ def button(update, context):
     if(int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
-    
-    if(int(coun) % 6 == 0 and int(coun) != 0):
+
+    #if (coun % 50 == 0 and coun != 0):
+    if(int(coun) % 50 == 0 and int(coun) != 0):
         pr = prise(10, username)
         query.edit_message_text(text=pr)
         write(query, username)
@@ -373,34 +375,36 @@ def button(update, context):
         write(query,username)
 
 
-    if(len(tweet_id2) == len(tweet_id)):
+    if(len(annotated_tweet_ids) == len(raw_tweet_ids)):
         message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
         query.edit_message_text(text=message)
         return 0
-    else:
-        for x in tweet_id:
-            if x not in tweet_id2:
-                if user_tweet_ids[username]:
-                    break
-                elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                    user_tweet_ids[username] = x
-                    tweet_id2.append(x)
-                    tweet_id_time[username] = time.time()
-                    eval(query, x ,map[user_tweet_ids[username]], username)
-                    break
-      
     if val == 0:
-        message = verify(username)  
+        message = verify(username)
+        user_real[username] = real_control()
         if message == 'warning':
-            query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ ባክዎን ተጠንቅቀው ይሙሉ")
+            write_correct(query, username, user_real[username])
+            query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ ባክዎን ተጠንቅቀው ይሙሉ. ለመቀጠል /start ይጫኑ!")
+            return 0
         elif message == 'block':
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
             return 0
         reply_markup = InlineKeyboardMarkup(keyboard)
-        user_real[username]  = real_control()
         query.edit_message_text(text=user_real[username])
         query.edit_message_reply_markup(reply_markup=reply_markup)
-        write_correct(query,username,user_real[username])
+
+        return 0
+    else:
+        for x in raw_tweet_ids:
+            if x not in annotated_tweet_ids:
+                if user_tweet_ids[username]:
+                    break
+                elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                    user_tweet_ids[username] = x
+                    annotated_tweet_ids.append(x)
+                    tweet_id_time[username] = time.time()
+                    eval(query, x ,map[user_tweet_ids[username]], username)
+                    break
 
         
 def write_correct(query, username, message):
@@ -428,9 +432,10 @@ def real_control():
 def write(query,username):
     with open('annotated_tweets.csv', 'a', encoding='utf8') as f:
         writer = csv.writer(f)
-        writer.writerow([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
-        print([user_tweet_ids[username],format(query.data),map[user_tweet_ids[username]],str(username)])
+        writer.writerow([user_tweet_ids[username], format(query.data),map[user_tweet_ids[username]], str(username)])
+        print([user_tweet_ids[username], format(query.data),map[user_tweet_ids[username]], str(username)])
         user_tweet_ids[username] = None
+        users.append(username)
 
 
 def help(update, context):
