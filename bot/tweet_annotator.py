@@ -209,7 +209,7 @@ def get_control_question():
     return control_question
 
 def verify(username):
-    couter = 0
+    counter = 0
     message = ''
     user_tweet = []
     for item in control:
@@ -222,18 +222,16 @@ def verify(username):
                 if control[x][:2] in ans:
                     break
                 else:
-                    couter = couter + 1
-    if couter == 3:
+                    counter = counter + 1
+    if counter == 3:
         message = 'warning'
-        return message
-    elif couter == 4:
+    elif counter == 4:
         message = 'block'
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
             f.write(username)
-        return message
-    return messsage
-   '''data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
+    return message
+'''data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
     data2 = pd.read_csv("control_answers.csv", encoding= 'utf8', usecols=['text','answer','username'])
 
     count = -1
