@@ -4,7 +4,7 @@ from telegram import Poll, Bot, PollOption, User, TelegramError
 import os
 # import telepot
 import random
-# import telebot
+import csv
 import pandas as pd
 from flask import Flask, request
 from properties.p import Property
@@ -33,7 +33,6 @@ bot_prop = prop.load_property_files('bot.properties')
 annotated_tweet_ids = []
 tweet_id_time = {}
 users = []
-warn = False
 if not os.path.exists('annotated_tweets.csv'):
     columns = ['tweet_id', 'sentiment', 'tweet', 'username']
     df = pd.DataFrame(columns=columns)
@@ -74,7 +73,7 @@ if not os.path.exists('blocked_user.txt'):
     f = open('blocked_user.txt', 'w', encoding='utf8')
     f.close()
 else:
-    blocked_user = open('blocked_user.txt', 'r').read()
+    blocked_users = open('blocked_user.txt', 'r').read()
 
 data = pd.read_csv('raw_tweets.csv', encoding='utf8', header=0)
 raw_tweet_ids = data['tweet_id']
@@ -115,16 +114,22 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 
 def start(update, context):
-    if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
+
+    username = update.effective_user.username
+    if username in blocked_users:
+        update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: hizkiel.mitiku@studio.unibo.it")
+        return 0
+
+    if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or \
+            (len(get_five_birs()) % 2 == 1 and
+             len(get_five_birs()) + len(get_ten_birs()) - 1 == len(get_charged_cards())):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         send_email()
         return 0
 
-    username = update.effective_user.username
-
     del_timeout_users()
 
-    if username in user_tweet_ids and user_tweet_ids[username] and warn == False:
+    if username in user_tweet_ids and user_tweet_ids[username]:
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
         return 0
     # else:
@@ -136,9 +141,6 @@ def start(update, context):
     # f   = open('ids.txt', 'r', encoding='utf8')
     # ids = f.read().strip().split("\n")
 
-    if username in blocked_users:
-        update.message.reply_text(text="please contact us via email: hizkiel.mitiku@studio.unibo.it")
-        return 0
     user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -147,8 +149,6 @@ def start(update, context):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message)
         return 0
-
-
     else:
         for x in raw_tweet_ids:
             if x not in annotated_tweet_ids:
@@ -161,11 +161,7 @@ def start(update, context):
                         tweet_id_time[username] = time.time()
                         break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
-
     lock.release()
-
-
-import csv
 
 
 def del_timeout_users():
@@ -230,42 +226,13 @@ def verify(username):
             f.write(username)
     return message
 
-
-'''data1 = pd.read_csv("control_questions.csv", encoding= 'utf8',  usecols=['tweet','class'])
-    data2 = pd.read_csv("control_answers.csv", encoding= 'utf8', usecols=['text','answer','username'])
-
-    count = -1
-    user_annotation = data2[data2['username'] == username].index.values
-    if len(user_annotation)>2:
-        for x in range(len(user_annotation)-4, len(user_annotation)):
-            text = data2['text'][user_annotation[x]]
-
-            index1 = data1[data1['tweet']==text].index.values
-            index2 = data2[data2['text']==text].index.values
-
-            r1 = data1['class'][index1[0]] 
-            r2 = data2['answer'][index2[0]]
-            if(r1 == r2):
-                continue
-            else:
-                count = count + 1
-        if count == 3:
-            message = 'warning'
-        elif count == 4:
-            message = 'block'
-            with open('blocked_user.txt', 'a', encoding='utf8') as f:
-                blocked_users.append(username)
-                f.write(username)
-        return message'''
-
-
 def get_charged_cards():
     fil = open('rewarded_cards.txt', 'r', encoding='utf8')
     rewarded_cards = fil.readlines()
     re = []
     for x in rewarded_cards:
         j = x.replace(' ', '')
-        re.append(j.rstrip('\n'))
+        re.append(j.rstrip('\n').split('\t')[0])
     while ('' in re):
         re.remove('')
     return re
@@ -306,7 +273,6 @@ def prise(num, username):
     re = get_charged_cards()
     te = get_ten_birs()
 
-    number = 'ካርድቁጥር 1፦'
     user_cards = []
     user_cards.extend(re)
     if len(te) > len(re):
@@ -314,22 +280,25 @@ def prise(num, username):
             if str(n) not in re:
                 user_cards.append(n)
                 fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '  ' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
+                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
                 fil.close()
                 return message + str(n)
 
     cnt = 0
+    number = ''
     for n in fiv:
         if str(n) not in user_cards:
             user_cards.append(n)
-            number = number + ' ካርድ ቁጥር  2:- ' + str(n)
+            number = number + ' ካርድ ቁጥር :- ' + str(n)
             fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-            fil.writelines(str(n) + '' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
+            fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
             fil.close()
             cnt += 1
-            if cnt > 2:
-                return message + number
+            if cnt > 1 :
+                break
     lock.release()
+    return message + number
+
 
 
 def button(update, context):
@@ -368,10 +337,10 @@ def button(update, context):
         return 0
 
     # if (coun % 50 == 0 and coun != 0):
-    if (int(coun) % 50 == 0 and int(coun) != 0):
-        pr = prise(10, username)
-        query.edit_message_text(text=pr)
+    if coun % 5 == 0 and coun != 0:
+        pr = prise(10, username) + "ለመቀጠል /start ይጫኑ!"
         write(query, username)
+        query.edit_message_text(text=pr)
         return 0
 
     if user_tweet_ids[username]:
@@ -400,9 +369,8 @@ def button(update, context):
         write_correct(query,username,user_real[username])
         message = verify(username)
         if message == 'warning':
-            query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ ባክዎን ተጠንቅቀው ይሙሉ, ለመቀጠል /start ይጫኑ!")
-            global warn
-            warn = True
+            query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ እባክዎን ተጠንቅቀው ይሙሉ, ለመቀጠል /start ይጫኑ!")
+            user_tweet_ids[username] = None
             return 0
         elif message == 'block':
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
@@ -496,7 +464,7 @@ def main():
     updater.dispatcher.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling(timeout=10)
+    updater.start_polling()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
