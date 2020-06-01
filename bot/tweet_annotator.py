@@ -333,9 +333,6 @@ def button(update, context):
         return 0
     user.clear()
 
-    # f   = open('ids.txt', 'r', encoding='utf8')
-    # ids = f.read().strip().split("\n")
-
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
     query.answer()
@@ -354,6 +351,7 @@ def button(update, context):
         pr = prise(10, username) + " ለመቀጠል /start ይጫኑ!"
         write(query, username)
         query.edit_message_text(text=pr)
+        print(username +' ' + pr)
         return 0
 
     if user_tweet_ids[username]:
