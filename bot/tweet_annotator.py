@@ -237,13 +237,12 @@ def get_charged_cards():
         re.remove('')
     return re
 
-
 def get_ten_birs():
     f2 = open('10birr.txt', 'r', encoding='utf8')
     ten = f2.readlines()
     te = []
     for x in ten:
-        j = x.replace(' ', '')
+        j = x.strip()
         te.append(j.rstrip('\n'))
     while ('' in te):
         te.remove('')
@@ -265,9 +264,8 @@ def get_five_birs():
 
 
 def prise(num, username):
-    lock.acquire()
-    today = date.today()
 
+    lock.acquire()
     message = "እንኳ ደስ አለዎት የ" + str(num) + " ብር ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
     fiv = get_five_birs()
     re = get_charged_cards()
@@ -275,28 +273,31 @@ def prise(num, username):
 
     user_cards = []
     user_cards.extend(re)
+    number = ''
+
     if len(te) > len(re):
         for n in te:
             if str(n) not in re:
                 user_cards.append(n)
+                number = number + ' ካርድ ቁጥር :- ' + str(n)
                 fil = open('rewarded_cards.txt', 'a', encoding='utf8')
                 fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
                 fil.close()
-                return message + str(n)
-
-    cnt = 0
-    number = ''
-    for n in fiv:
-        if str(n) not in user_cards:
-            user_cards.append(n)
-            number = number + ' ካርድ ቁጥር :- ' + str(n)
-            fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-            fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
-            fil.close()
-            cnt += 1
-            if cnt > 1 :
                 break
-    lock.release()
+
+    else:
+        cnt = 0
+        for n in fiv:
+            if str(n) not in user_cards:
+                user_cards.append(n)
+                number = number + ' ካርድ ቁጥር :- ' + str(n)
+                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
+                fil.close()
+                cnt += 1
+                if cnt > 1 :
+                    break
+        lock.release()
     return message + number
 
 
@@ -338,7 +339,7 @@ def button(update, context):
 
     # if (coun % 50 == 0 and coun != 0):
     if coun % 5 == 0 and coun != 0:
-        pr = prise(10, username) + "ለመቀጠል /start ይጫኑ!"
+        pr = prise(10, username) + " ለመቀጠል /start ይጫኑ!"
         write(query, username)
         query.edit_message_text(text=pr)
         return 0
