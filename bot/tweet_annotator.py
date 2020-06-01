@@ -274,7 +274,7 @@ def prise(num, username):
     user_cards = []
     user_cards.extend(re)
     number = ''
-
+    '''
     if len(te) > len(re):
         for n in te:
             if str(n) not in re:
@@ -284,9 +284,21 @@ def prise(num, username):
                 fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
                 fil.close()
                 break
+    
 
     else:
-        cnt = 0
+    '''
+    cnt = 0
+    if len(te) > len(re):
+        for n in te:
+            if str(n) not in user_cards:
+                user_cards.append(n)
+                number = number + ' ካርድ ቁጥር :- ' + str(n)
+                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
+                fil.close()
+                break
+    else:
         for n in fiv:
             if str(n) not in user_cards:
                 user_cards.append(n)
@@ -295,9 +307,9 @@ def prise(num, username):
                 fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
                 fil.close()
                 cnt += 1
-                if cnt > 1 :
+                if cnt > 1:
                     break
-        lock.release()
+    lock.release()
     return message + number
 
 
@@ -363,6 +375,7 @@ def button(update, context):
                     eval(query, x, map[user_tweet_ids[username]], username)
                     break
     if val == 0:
+
         reply_markup = InlineKeyboardMarkup(keyboard)
         user_real[username]  = real_control()
         query.edit_message_text(text=user_real[username])
