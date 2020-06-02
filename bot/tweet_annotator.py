@@ -120,6 +120,11 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 def start(update, context):
 
     username = update.effective_user.username
+    if username == None:
+        update.message.reply_text(
+            text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
+        return 0
+
     if username in blocked_users:
         update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: hizkiel.mitiku@studio.unibo.it")
         return 0
@@ -137,14 +142,6 @@ def start(update, context):
     if username in user_tweet_ids and user_tweet_ids[username]:
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
         return 0
-    # else:
-
-    if username == None:
-        update.message.reply_text(
-            text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
-        return 0
-    # f   = open('ids.txt', 'r', encoding='utf8')
-    # ids = f.read().strip().split("\n")
 
     user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -155,7 +152,6 @@ def start(update, context):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message)
         lock.release()
-
         return 0
 
     # if number of tweets are less than the max allowed tweets, we allow only limited users to annotate at a time
@@ -163,16 +159,15 @@ def start(update, context):
         message = 'እባክዎን ትንሽ ቆይተው /start ብለው ይሞክሩ!!'
         update.message.reply_text(message)
         lock.release()
-
         return 0
 
     if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
             (len(get_five_birs()) % 2 == 1 and
-             len(get_five_birs()) + len(get_ten_birs()) - 1 - len(get_charged_cards()) <= len(user_tweet_ids)):
+             len(get_five_birs()) + len(get_ten_birs()) -1- len(get_charged_cards()) <= len(user_tweet_ids)):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
+        del user_tweet_ids[username]
         send_email()
         lock.release()
-
         return 0
 
 
@@ -300,20 +295,6 @@ def prise(num, username):
     user_cards = []
     user_cards.extend(re)
     number = ''
-    '''
-    if len(te) > len(re):
-        for n in te:
-            if str(n) not in re:
-                user_cards.append(n)
-                number = number + ' ካርድ ቁጥር :- ' + str(n)
-                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\n')
-                fil.close()
-                break
-    
-
-    else:
-    '''
     cnt = 0
     if len(te) > len(re):
         for n in te:
