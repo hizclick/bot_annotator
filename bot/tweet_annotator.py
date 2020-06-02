@@ -28,6 +28,10 @@ user_real = {}
 prop = Property()
 
 max_allowed_tweet = 500  # 500 tweets
+max_allowed_time = 600
+number_tweet_to_reward = 5 # how many tweets the user should annotate to get crads
+controls_per_tweet = 6 # for every 5 tweet, we need one control question
+
 bot_prop = prop.load_property_files('bot.properties')
 
 annotated_tweet_ids = []
@@ -127,6 +131,7 @@ def start(update, context):
         send_email()
         return 0
 
+
     del_timeout_users()
 
     if username in user_tweet_ids and user_tweet_ids[username]:
@@ -145,21 +150,35 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     lock.acquire()
+
     if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message)
         return 0
-    else:
-        for x in raw_tweet_ids:
-            if x not in annotated_tweet_ids:
-                if username in user_tweet_ids and user_tweet_ids[username] != None:
+
+    # if number of tweets are less than the max allowed tweets, we allow only limited users to annotate at a time
+    if (len(raw_tweet_ids) - len(annotated_tweet_ids)) / number_tweet_to_reward <= len(user_tweet_ids):
+        message = 'እባክዎን ትንሽ ቆይተው /start ብለው ይሞክሩ!!'
+        update.message.reply_text(message)
+        return 0
+
+    if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
+            (len(get_five_birs()) % 2 == 1 and
+             len(get_five_birs()) + len(get_ten_birs()) - 1 - len(get_charged_cards()) <= len(user_tweet_ids)):
+        update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
+        send_email()
+        return 0
+
+    for x in raw_tweet_ids:
+        if x not in annotated_tweet_ids:
+            if username in user_tweet_ids and user_tweet_ids[username] != None:
+                break
+            else:
+                if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                    user_tweet_ids[username] = x
+                    annotated_tweet_ids.append(x)
+                    tweet_id_time[username] = time.time()
                     break
-                else:
-                    if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                        user_tweet_ids[username] = x
-                        annotated_tweet_ids.append(x)
-                        tweet_id_time[username] = time.time()
-                        break
     update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
     lock.release()
 
@@ -168,7 +187,7 @@ def del_timeout_users():
     expired_users = []
     for uname in tweet_id_time:
         current_time = time.time()
-        if current_time - tweet_id_time[uname] > 600:
+        if current_time - tweet_id_time[uname] >  max_allowed_time:
             expired_users.append(uname)
             annotated_tweet_ids.remove(user_tweet_ids[uname])
             user_tweet_ids[uname] = None
@@ -340,14 +359,14 @@ def button(update, context):
     for x in users:
         user.append(x)
     coun = user.count(username)  # TODO
-    val = coun % 6
+    val = coun % controls_per_tweet
 
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
 
-    # if (coun % 50 == 0 and coun != 0):
-    if coun % 5 == 0 and coun != 0:
+
+    if coun % number_tweet_to_reward == 0 and coun != 0:
         pr = prise(10, username) + " ለመቀጠል /start ይጫኑ!"
         write(query, username)
         query.edit_message_text(text=pr)
@@ -361,19 +380,19 @@ def button(update, context):
         message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
         query.edit_message_text(text=message)
         return 0
-    else:
-        for x in raw_tweet_ids:
-            if x not in annotated_tweet_ids:
-                if user_tweet_ids[username]:
-                    break
-                elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                    user_tweet_ids[username] = x
-                    annotated_tweet_ids.append(x)
-                    tweet_id_time[username] = time.time()
-                    eval(query, x, map[user_tweet_ids[username]], username)
-                    break
-    if val == 0:
 
+    for x in raw_tweet_ids:
+        if x not in annotated_tweet_ids:
+            if user_tweet_ids[username]:
+                break
+            elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                user_tweet_ids[username] = x
+                annotated_tweet_ids.append(x)
+                tweet_id_time[username] = time.time()
+                eval(query, x, map[user_tweet_ids[username]], username)
+                break
+
+    if val == 0:
         reply_markup = InlineKeyboardMarkup(keyboard)
         user_real[username]  = real_control()
         query.edit_message_text(text=user_real[username])
@@ -387,9 +406,6 @@ def button(update, context):
         elif message == 'block':
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
             return 0
-
-
-
 
 def write_correct(query, username, message):
     with open('control_answers.csv', 'a', encoding='utf8') as f:
