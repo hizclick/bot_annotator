@@ -154,12 +154,16 @@ def start(update, context):
     if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
         message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
         update.message.reply_text(message)
+        lock.release()
+
         return 0
 
     # if number of tweets are less than the max allowed tweets, we allow only limited users to annotate at a time
     if (len(raw_tweet_ids) - len(annotated_tweet_ids)) / number_tweet_to_reward <= len(user_tweet_ids):
         message = 'እባክዎን ትንሽ ቆይተው /start ብለው ይሞክሩ!!'
         update.message.reply_text(message)
+        lock.release()
+
         return 0
 
     if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
@@ -167,7 +171,10 @@ def start(update, context):
              len(get_five_birs()) + len(get_ten_birs()) - 1 - len(get_charged_cards()) <= len(user_tweet_ids)):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         send_email()
+        lock.release()
+
         return 0
+
 
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
