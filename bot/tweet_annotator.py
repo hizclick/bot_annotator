@@ -368,18 +368,6 @@ def button(update, context):
         message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
         query.edit_message_text(text=message)
         return 0
-
-    for x in raw_tweet_ids:
-        if x not in annotated_tweet_ids:
-            if user_tweet_ids[username]:
-                break
-            elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                user_tweet_ids[username] = x
-                annotated_tweet_ids.append(x)
-                tweet_id_time[username] = time.time()
-                eval(query, x, map[user_tweet_ids[username]], username)
-                break
-
     if val == 0:
         reply_markup = InlineKeyboardMarkup(keyboard)
         user_real[username]  = real_control()
@@ -394,6 +382,20 @@ def button(update, context):
         elif message == 'block':
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
             return 0
+
+    else:
+        for x in raw_tweet_ids:
+            if x not in annotated_tweet_ids:
+                if user_tweet_ids[username]:
+                    break
+                elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                    user_tweet_ids[username] = x
+                    annotated_tweet_ids.append(x)
+                    tweet_id_time[username] = time.time()
+                    eval(query, x, map[user_tweet_ids[username]], username)
+                    break
+
+
 
 def write_correct(query, username, message):
     with open('control_answers.csv', 'a', encoding='utf8') as f:
