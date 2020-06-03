@@ -87,10 +87,9 @@ user = []
 
 user_tweet_ids = {}  # username1 = tweet_id1, username2 = annotated_tweet_ids
 
-map = dict()
-map2 = dict()
+tweet_id_to_tweet = dict()
 for item in raw_tweet_ids.keys():
-    map[raw_tweet_ids[item]] = tweet[item]
+    tweet_id_to_tweet[raw_tweet_ids[item]] = tweet[item]
 
 # converting to dict
 
@@ -119,9 +118,8 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 
 def start(update, context):
-
    # username = update.effective_user.username
-    username = update.effective_user.id
+    username = str(update.effective_user.id)
     if username == None:
         update.message.reply_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
@@ -183,7 +181,7 @@ def start(update, context):
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
                     break
-    update.message.reply_text(map[user_tweet_ids[username]], reply_markup=reply_markup)
+    update.message.reply_text(tweet_id_to_tweet[user_tweet_ids[username]], reply_markup=reply_markup)
     lock.release()
 
 
@@ -217,12 +215,6 @@ def send_email():
         server.ehlo()  # Can be omitted
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message)
-
-
-def get_control_question():
-    control_question = pd.read_csv("control_questions.csv", encoding='utf8', usecols=['tweet', 'class'])
-    return control_question
-
 
 def verify(username):
     counter = 0
@@ -286,7 +278,7 @@ def get_five_birs():
     return fiv
 
 
-def prise(num, username):
+def prise(num):
 
     lock.acquire()
     message = "እንኳ ደስ አለዎት የ" + str(num) + " ብር ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
@@ -324,8 +316,8 @@ def prise(num, username):
 
 
 def button(update, context):
+    username = str(update.effective_user.id)
     del_timeout_users()
-
     query = update.callback_query
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         query.edit_message_text(text="ትንሽ ቆይተው ይሞክሩ!")
@@ -333,9 +325,6 @@ def button(update, context):
         send_email()
         return 0
 
-    message_id = update.callback_query.message.message_id
-    print(message_id)
-    username = update.effective_user.id
     if username == None:
         query.edit_message_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save. ለበለጠ መረጃ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
@@ -344,20 +333,18 @@ def button(update, context):
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
-    query.answer()
+   # query.answer()
     user.clear()
     for x in users:
         user.append(x)
     coun = user.count(username)  # TODO
     val = coun % controls_per_tweet
-
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
 
-
     if coun % number_tweet_to_reward == 0 and coun != 0:
-        pr = prise(10, username) + " ለመቀጠል /start ይጫኑ!"
+        pr = prise(10) + " ለመቀጠል /start ይጫኑ!"
         write(query, username)
         query.edit_message_text(text=pr)
         print(username +' ' + pr)
@@ -365,16 +352,7 @@ def button(update, context):
 
     if user_tweet_ids[username]:
         write(query, username)
-
-    if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
-        message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
-        query.edit_message_text(text=message)
-        return 0
-    if val == 0:
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        user_real[username]  = real_control()
-        query.edit_message_text(text=user_real[username])
-        query.edit_message_reply_markup(reply_markup=reply_markup)
+    if username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
         message = verify(username)
         if message == 'warning':
@@ -385,6 +363,16 @@ def button(update, context):
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
             return 0
 
+    if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
+        message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
+        query.edit_message_text(text=message)
+        return 0
+
+    if val == 0:
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        user_real[username]  = real_control()
+        query.edit_message_text(text=user_real[username])
+        query.edit_message_reply_markup(reply_markup=reply_markup)
     else:
         for x in raw_tweet_ids:
             if x not in annotated_tweet_ids:
@@ -394,17 +382,22 @@ def button(update, context):
                     user_tweet_ids[username] = x
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
-                    eval(query, x, map[user_tweet_ids[username]], username)
+                    eval(query, x, tweet_id_to_tweet[user_tweet_ids[username]], username)
                     break
 
 
 
 def write_correct(query, username, message):
     with open('control_answers.csv', 'a', encoding='utf8') as f:
-        writer = csv.writer(f)
-        writer.writerow([message, format(query.data), str(username)])
-        control.append((message, format(query.data), str(username)))
-        user_real[username] = None
+        lock.acquire()
+        try:
+            writer = csv.writer(f)
+            writer.writerow([message, format(query.data), str(username)])
+            control.append((message, format(query.data), str(username)))
+            user_real[username] = None
+        except:
+            print("error in control")
+        lock.release()
 
 
 def eval(query, tweet_id, tweet, username):
@@ -423,11 +416,21 @@ def real_control():
 
 def write(query, username):
     with open('annotated_tweets.csv', 'a', encoding='utf8') as f:
-        writer = csv.writer(f)
-        writer.writerow([user_tweet_ids[username], format(query.data), map[user_tweet_ids[username]], str(username)])
-        print([user_tweet_ids[username], format(query.data), map[user_tweet_ids[username]], str(username)])
-        user_tweet_ids[username] = None
-        users.append(username)
+
+        lock.acquire()
+        try:
+            writer = csv.writer(f)
+            writer.writerow([user_tweet_ids[username], format(query.data), tweet_id_to_tweet[user_tweet_ids[username]], str(username)])
+            print([user_tweet_ids[username], format(query.data), tweet_id_to_tweet[user_tweet_ids[username]], str(username)])
+            user_tweet_ids[username] = None
+            users.append(username)
+        except:
+            print("error is here")
+            print("error is here", username)
+            print("error is here", user_tweet_ids[username])
+            print("error is here", tweet_id_to_tweet)
+
+        lock.release()
 
 
 def help(update, context):
