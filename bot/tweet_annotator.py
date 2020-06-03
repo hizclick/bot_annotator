@@ -338,6 +338,7 @@ def button(update, context):
     for x in users:
         user.append(x)
     coun = user.count(username)  # TODO
+    print("count is = ", coun)
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
@@ -345,14 +346,17 @@ def button(update, context):
 
     if coun % number_tweet_to_reward == 0 and coun != 0:
         pr = prise(10) + " ለመቀጠል /start ይጫኑ!"
-        write(query, username)
+        if user_tweet_ids[username]:
+            write(query, username)
+        else:
+            write_correct(query, username, user_real[username])
         query.edit_message_text(text=pr)
         print(username +' ' + pr)
         return 0
 
     if user_tweet_ids[username]:
         write(query, username)
-    if username in user_real and user_real[username]:
+    elif username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
         message = verify(username)
         if message == 'warning':
@@ -395,6 +399,7 @@ def write_correct(query, username, message):
             writer.writerow([message, format(query.data), str(username)])
             control.append((message, format(query.data), str(username)))
             user_real[username] = None
+            users.append(username)
         except:
             print("error in control")
         lock.release()
