@@ -99,6 +99,7 @@ for item in raw_tweet_ids.keys():
 
 # bot = telebot.TeleBot(token = TOKEN)
 TOKEN = bot_prop['TOKEN']
+Password = bot_prop['PASSWORD']
 
 import logging
 
@@ -205,7 +206,7 @@ def send_email():
     smtp_server = "smtp.gmail.com"
     sender_email = "tellebott@gmail.com"
     receiver_email = "hizclick@gmail.com"
-    password = "Hizbot2020"
+    password = Password
     message = """no more mobile cards"""
 
     context = ssl.create_default_context()
