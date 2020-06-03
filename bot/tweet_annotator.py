@@ -29,7 +29,7 @@ prop = Property()
 
 max_allowed_tweet = 500  # 500 tweets
 max_allowed_time = 600
-number_tweet_to_reward = 5 # how many tweets the user should annotate to get crads
+number_tweet_to_reward = 60 # how many tweets the user should annotate to get crads
 controls_per_tweet = 6 # for every 5 tweet, we need one control question
 
 bot_prop = prop.load_property_files('bot.properties')
@@ -46,7 +46,7 @@ else:
     annotated_tweet_ids = data2['tweet_id'].apply(lambda x: str(x)).tolist()
     sentiment = data2['sentiment']
     count = data2['username'].value_counts()
-    users = data2['username'].tolist()
+    users = data2['username'].apply(lambda x: str(x)).tolist()
 
 ans = list()
 if not os.path.exists('control_questions.csv'):
@@ -66,7 +66,7 @@ if not os.path.exists('control_answers.csv'):
 else:
     control_answers = pd.read_csv('control_answers.csv', encoding='utf8')
     for item in zip(control_answers['tweet'], control_answers['answer'], control_answers['username']):
-        control.append((item[0], item[1], item[2]))
+        control.append((item[0], item[1], str(item[2])))
 
 if not os.path.exists('rewarded_cards.txt'):
     f = open('rewarded_cards.txt', 'w', encoding='utf8')
@@ -77,13 +77,12 @@ if not os.path.exists('blocked_user.txt'):
     f = open('blocked_user.txt', 'w', encoding='utf8')
     f.close()
 else:
-    blocked_users = open('blocked_user.txt', 'r').read()
+    blocked_users = [x.strip() for x in open('blocked_user.txt', 'r').readlines()]
 
 data = pd.read_csv('raw_tweets.csv', encoding='utf8', header=0)
 raw_tweet_ids = data['tweet_id']
 
 tweet = data['tweet']
-user = []
 
 user_tweet_ids = {}  # username1 = tweet_id1, username2 = annotated_tweet_ids
 
@@ -99,7 +98,7 @@ for item in raw_tweet_ids.keys():
 # bot = telebot.TeleBot(token = TOKEN)
 TOKEN = bot_prop['TOKEN']
 Password = bot_prop['PASSWORD']
-
+SEND_EMAIL = bot_prop['SENDEMAIL']
 import logging
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -126,7 +125,7 @@ def start(update, context):
         return 0
 
     if username in blocked_users:
-        update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: hizkiel.mitiku@studio.unibo.it")
+        update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: " + SEND_EMAIL)
         return 0
 
     if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or \
@@ -143,7 +142,6 @@ def start(update, context):
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
         return 0
 
-    user.clear()
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     lock.acquire()
@@ -227,18 +225,18 @@ def verify(username):
     if len(user_tweet) > 2:  # more than two mistakes
         for x in range(max(len(user_tweet) - 4, 0), len(user_tweet)):
             if user_tweet[x] in ans:
-                break
+                continue
             else:
                 counter = counter + 1
             if counter == 3:
                 message = "warning"
             elif counter > 3:
                 message = "block"
-
     if counter >= 4:
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
-            f.write(username)
+            f.write(username+"\n")
+    print ("verify message = ", message)
     return message
 
 def get_charged_cards():
@@ -329,16 +327,13 @@ def button(update, context):
         query.edit_message_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save. ለበለጠ መረጃ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0
-    user.clear()
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
    # query.answer()
-    user.clear()
-    for x in users:
-        user.append(x)
-    coun = user.count(username)  # TODO
-    print("count is = ", coun)
+
+    coun = users.count(username)  # TODO
+    print("count for username ",username, "is", coun)
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
@@ -354,7 +349,7 @@ def button(update, context):
         print(username +' ' + pr)
         return 0
 
-    if user_tweet_ids[username]:
+    if user_tweet_ids[username] is not None:
         write(query, username)
     elif username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
