@@ -120,7 +120,8 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
 
-    username = update.effective_user.username
+   # username = update.effective_user.username
+    username = update.effective_user.id
     if username == None:
         update.message.reply_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
@@ -334,7 +335,7 @@ def button(update, context):
 
     message_id = update.callback_query.message.message_id
     print(message_id)
-    username = update.effective_user.username
+    username = update.effective_user.id
     if username == None:
         query.edit_message_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save. ለበለጠ መረጃ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
