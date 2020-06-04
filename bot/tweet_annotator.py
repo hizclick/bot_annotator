@@ -189,8 +189,9 @@ def del_timeout_users():
         current_time = time.time()
         if current_time - tweet_id_time[uname] >  max_allowed_time:
             expired_users.append(uname)
-            annotated_tweet_ids.remove(user_tweet_ids[uname])
-            user_tweet_ids[uname] = None
+            if user_tweet_ids[uname] and user_tweet_ids[uname] in annotated_tweet_ids:
+                annotated_tweet_ids.remove(user_tweet_ids[uname])
+                user_tweet_ids[uname] = None
 
     for expired_user in expired_users:
         del tweet_id_time[expired_user]
