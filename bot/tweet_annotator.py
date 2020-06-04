@@ -36,6 +36,7 @@ bot_prop = prop.load_property_files('bot.properties')
 
 tweet_id_time = {}
 users = []
+annotated_tweet_ids = []
 if not os.path.exists('annotated_tweets.csv'):
     columns = ['tweet_id', 'sentiment', 'tweet', 'username']
     df = pd.DataFrame(columns=columns)
@@ -118,6 +119,9 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 def start(update, context):
    # username = update.effective_user.username
     username = str(update.effective_user.id)
+    print(update.effective_user.first_name, update.effective_user.last_name)
+
+
     if username == None:
         update.message.reply_text(
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
@@ -461,12 +465,16 @@ def error(update, context):
     except TelegramError:
         logging.debug("TELEGRAM ERROR: Other error - %s" % error)
     except:
-        logging.debug("TELEGRAM ERROR: Unknown - %s" % error)
-        """Log Errors caused by Updates."""
-        logger.warning('Update "%s" caused error "%s"', update, context.error)
-        message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
-        query = update.callback_query
-        query.edit_message_text(text=message)
+        try:
+            logging.debug("TELEGRAM ERROR: Unknown - %s" % error)
+            """Log Errors caused by Updates."""
+            logger.warning('Update "%s" caused error "%s"', update, context.error)
+            message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
+            query = update.callback_query
+            query.edit_message_text(text=message)
+        except:
+            print('Worst error! No idea')
+
     return 0
 
 
