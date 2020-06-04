@@ -20,7 +20,7 @@ import smtplib
 from email.message import EmailMessage
 
 from telegram.utils.request import Request
-
+number_warnning_user = {}
 lock = Lock()
 
 user_error_count = {}
@@ -235,9 +235,12 @@ def verify(username):
                 counter = counter + 1
             if counter == 3:
                 message = "warning"
+                number_warnning_user[username] = number_warnning_user.get(username,0) +1
             elif counter > 3:
                 message = "block"
-    if counter >= 4:
+
+    if counter >= 4 or number_warnning_user.get(username,0)>2:
+        message = "block"
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
             f.write(username+"\n")
