@@ -23,7 +23,7 @@ from telegram.utils.request import Request
 
 lock = Lock()
 
-
+user_error_count = {}
 user_real = {}
 prop = Property()
 
@@ -34,7 +34,6 @@ controls_per_tweet = 6 # for every 5 tweet, we need one control question
 
 bot_prop = prop.load_property_files('bot.properties')
 
-annotated_tweet_ids = []
 tweet_id_time = {}
 users = []
 if not os.path.exists('annotated_tweets.csv'):
@@ -226,6 +225,7 @@ def verify(username):
     if len(user_tweet) > 2:  # more than two mistakes
         for x in range(max(len(user_tweet) - 4, 0), len(user_tweet)):
             if user_tweet[x] in ans:
+                counter = 0
                 continue
             else:
                 counter = counter + 1
