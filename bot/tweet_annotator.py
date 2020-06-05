@@ -26,6 +26,7 @@ lock = Lock()
 user_error_count = {}
 user_real = {}
 prop = Property()
+user_examples = []
 
 max_allowed_tweet = 500  # 500 tweets
 max_allowed_time = 600
@@ -79,6 +80,11 @@ if not os.path.exists('blocked_user.txt'):
 else:
     blocked_users = [x.strip() for x in open('blocked_user.txt', 'r').readlines()]
 
+if not os.path.exists('log.txt'):
+    f = open('log.txt', 'w', encoding='utf8')
+    f.close()
+
+
 data = pd.read_csv('raw_tweets.csv', encoding='utf8', header=0)
 raw_tweet_ids = data['tweet_id']
 
@@ -117,7 +123,8 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 
 def start(update, context):
-   # username = update.effective_user.username
+
+    # username = update.effective_user.username
     username = str(update.effective_user.id)
     print(update.effective_user.first_name, update.effective_user.last_name)
 
@@ -127,11 +134,28 @@ def start(update, context):
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0
 
+    '''coun = users.count(username)
+    if coun == 0:
+        update.message.reply_text(
+            text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
+        return 0'''
+    if user_examples.count(username) == 0:
+        examples = """ምሳሌ \n
+        ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
+        ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
+        ጠንካራ ባህል ያለን ህዝቦችዎች  ->ገምቢ\n
+        ቀኑ ሀሙስ ነው ፟-> ገለልተኛ \n
+        ለመቀጠል /start ይጫኑ"""
+
+        update.message.reply_text(text=examples)
+        user_examples.append(username)
+        return 0
+
     if username in blocked_users:
         update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: " + SEND_EMAIL)
         return 0
 
-    if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or \
+    if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or\
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) - 1 == len(get_charged_cards())):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
@@ -284,7 +308,7 @@ def get_five_birs():
     return fiv
 
 
-def prise(num):
+def prise(num, username):
 
     lock.acquire()
     message = "እንኳ ደስ አለዎት የ" + str(num) + " ብር ካርድ አሸናፊ ሆነዋል። የካርድ ቁጥርዎ የሚከተሉት ናቸው፦ "
@@ -302,7 +326,7 @@ def prise(num):
                 user_cards.append(n)
                 number = number + ' ካርድ ቁጥር :- ' + str(n)
                 fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
+                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
                 fil.close()
                 break
     else:
@@ -311,7 +335,7 @@ def prise(num):
                 user_cards.append(n)
                 number = number + ' ካርድ ቁጥር :- ' + str(n)
                 fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + "\n")
+                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
                 fil.close()
                 cnt += 1
                 if cnt > 1:
@@ -342,13 +366,15 @@ def button(update, context):
 
     coun = users.count(username)  # TODO
     print("count for username ",username, "is", coun)
+    with open('log.txt', 'a', encoding='utf8') as f:
+        f.write(username + " " + update.effective_user.username + " " + update.effective_user.first_name + " " + update.effective_user.last_name + "\n")
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
         return 0
 
     if coun % number_tweet_to_reward == 0 and coun != 0:
-        pr = prise(10) + " ለመቀጠል /start ይጫኑ!"
+        pr = prise(10,username) + " ለመቀጠል /start ይጫኑ!"
         if user_tweet_ids[username]:
             write(query, username)
         else:
@@ -472,7 +498,7 @@ def error(update, context):
             logging.debug("TELEGRAM ERROR: Unknown - %s" % error)
             """Log Errors caused by Updates."""
             logger.warning('Update "%s" caused error "%s"', update, context.error)
-            message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውንንይሞክሩ!'
+            message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውን ንይሞክሩ!'
             query = update.callback_query
             query.edit_message_text(text=message)
         except:
