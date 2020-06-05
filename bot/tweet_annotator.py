@@ -143,8 +143,8 @@ def start(update, context):
         examples = """ምሳሌ \n
         ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
         ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
-        ጠንካራ ባህል ያለን ህዝቦችዎች  ->ገምቢ\n
-        ቀኑ ሀሙስ ነው ፟-> ገለልተኛ \n
+        ጠንካራ ባህል ያለን ህዝብዎች ነን ->ገምቢ\n
+        ቀኑ ሐሙስ ነው ፟-> ገለልተኛ \n
         ለመቀጠል /start ይጫኑ"""
 
         update.message.reply_text(text=examples)
