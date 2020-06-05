@@ -123,10 +123,10 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 
 def start(update, context):
-
     # username = update.effective_user.username
     username = str(update.effective_user.id)
     print(update.effective_user.first_name, update.effective_user.last_name)
+    del_timeout_users()
 
 
     if username == None:
@@ -155,6 +155,12 @@ def start(update, context):
         update.message.reply_text(text="እባክዎን በሚቀጥላው ኢሜይል ያግኙን: " + SEND_EMAIL)
         return 0
 
+    coun = users.count(username)  # TODO
+    if (int(coun) > max_allowed_tweet):
+        update.message.reply_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
+        del_timeout_users()
+        return 0
+
     if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or\
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) - 1 == len(get_charged_cards())):
@@ -163,7 +169,6 @@ def start(update, context):
         return 0
 
 
-    del_timeout_users()
 
     if username in user_tweet_ids and user_tweet_ids[username]:
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
@@ -180,7 +185,7 @@ def start(update, context):
         return 0
 
     # if number of tweets are less than the max allowed tweets, we allow only limited users to annotate at a time
-    if (len(raw_tweet_ids) - len(annotated_tweet_ids)) / number_tweet_to_reward <= len(user_tweet_ids):
+    if (len(raw_tweet_ids) - len(annotated_tweet_ids)) / number_tweet_to_reward <= len([v for k,v in user_tweet_ids.items() if v is not None]):
         message = 'እባክዎን ትንሽ ቆይተው /start ብለው ይሞክሩ!!'
         update.message.reply_text(message)
         lock.release()
@@ -370,7 +375,8 @@ def button(update, context):
         f.write(username + " " + update.effective_user.username + " " + update.effective_user.first_name + " " + update.effective_user.last_name + "\n")
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
-        query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ብቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
+        query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
+        del_timeout_users()
         return 0
 
     if coun % number_tweet_to_reward == 0 and coun != 0:
