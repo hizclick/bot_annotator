@@ -44,7 +44,7 @@ if not os.path.exists('annotated_tweets.csv'):
     df.to_csv('annotated_tweets.csv', index=False)
 else:
     data2 = pd.read_csv('annotated_tweets.csv', encoding='utf8')
-    annotated_tweet_ids = data2['tweet_id'].apply(lambda x: str(x)).tolist()
+    annotated_tweet_ids = data2['tweet_id'].apply(lambda x: int(x)).tolist()
     sentiment = data2['sentiment']
     count = data2['username'].value_counts()
     users = data2['username'].apply(lambda x: str(x)).tolist()
@@ -140,7 +140,7 @@ def start(update, context):
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0'''
     if user_examples.count(username) == 0:
-        examples = """ ይህ ሰርቬይ አግባብ ያልሆኑ ቃላት ወይም ንግግሮች ሊኖሩት ይችላል። ዳታውን ያገኘነው ከትዊተር ገፅ ላይ ነው። ከ18 አመት በታች ከሆኑና ተገቢ ያልሆኑ ንግግሮችን ማየት ካልፈለጉ  /end የሚለውን ተጭነው ይውጡ። \n
+        examples = """ ይህ ሰርቬይ አግባብ ያልሆኑ ቃላት ወይም ንግግሮች ሊኖሩት ይችላል። ዳታውን ያገኘነው ከትዊተር ገፅ ላይ ነው። ከ18 አመት በታች ከሆኑና ተገቢ ያልሆኑ ንግግሮችን ማየት ካልፈለጉ  /end የሚለውን ተጭነው ይውጡ። 
         ምሳሌ \n
         ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
         ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
