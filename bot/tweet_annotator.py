@@ -140,7 +140,8 @@ def start(update, context):
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0'''
     if user_examples.count(username) == 0:
-        examples = """ምሳሌ \n
+        examples = """ ይህ ሰርቬይ አግባብ ያልሆኑ ቃላት ወይም ንግግሮች ሊኖሩት ይችላል። ዳታውን ያገኘነው ከትዊተር ገፅ ላይ ነው። ከ18 አመት በታች ከሆኑና ተገቢ ያልሆኑ ንግግሮችን ማየት ካልፈለጉ  /end የሚለውን ተጭነው ይውጡ። \n
+        ምሳሌ \n
         ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
         ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
         ጠንካራ ባህል ያለን ህዝብዎች ነን ->ገምቢ\n
