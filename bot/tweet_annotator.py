@@ -126,7 +126,7 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 def start(update, context):
     # username = update.effective_user.username
     username = str(update.effective_user.id)
-    print(update.effective_user.first_name, update.effective_user.last_name)
+    print(update.effective_user.first_name)
     del_timeout_users()
 
 
@@ -274,7 +274,7 @@ def verify(username,fName,uname, lname):
         message = "block"
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
-            f.write(username+ ' ' + uname + ' ' + fName + ' ' + lname + "\n")
+            f.write(str(username)+ ' ' + uname + ' ' + fName +  "\n")
     print ("verify message = ", message)
     return message
 
@@ -356,7 +356,6 @@ def button(update, context):
     username = str(update.effective_user.id)
     uname = str(update.effective_user.username)
     fName  = str(update.effective_user.first_name)
-    lname = str(str(update.effective_user.last_name))
     del_timeout_users()
     query = update.callback_query
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
@@ -377,7 +376,8 @@ def button(update, context):
     coun = users.count(username)  # TODO
     print("count for username ",username, "is", coun)
     with open('log.txt', 'a', encoding='utf8') as f:
-        f.write(username + " " + update.effective_user.username + " " + update.effective_user.first_name + " " + update.effective_user.last_name + "\n")
+        if update.effective_user.first_name:
+            f.write(username + " " + update.effective_user.username + " " + update.effective_user.first_name  + "\n")
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
