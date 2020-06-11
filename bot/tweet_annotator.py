@@ -40,6 +40,7 @@ users = []
 annotated_tweet_ids = []
 if not os.path.exists('annotated_tweets.csv'):
     columns = ['tweet_id', 'sentiment', 'tweet', 'username']
+    columns = ['tweet_id', 'sentiment', 'tweet', 'username']
     df = pd.DataFrame(columns=columns)
     df.to_csv('annotated_tweets.csv', index=False)
 else:
@@ -248,7 +249,7 @@ def send_email():
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message)
 
-def verify(username):
+def verify(username,fName,uname, lname):
     counter = 0
     message = None
     user_tweet = []
@@ -273,7 +274,7 @@ def verify(username):
         message = "block"
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
             blocked_users.append(username)
-            f.write(username+"\n")
+            f.write(username+ ' ' + uname + ' ' + fName + ' ' + lname + "\n")
     print ("verify message = ", message)
     return message
 
@@ -353,6 +354,9 @@ def prise(num, username):
 
 def button(update, context):
     username = str(update.effective_user.id)
+    uname = str(update.effective_user.username)
+    fName  = str(update.effective_user.first_name)
+    lname = str(str(update.effective_user.last_name))
     del_timeout_users()
     query = update.callback_query
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
@@ -394,7 +398,7 @@ def button(update, context):
         write(query, username)
     elif username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
-        message = verify(username)
+        message = verify(username,fName,uname, lname)
         if message == 'warning':
             query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ እባክዎን ተጠንቅቀው ይሙሉ, ለመቀጠል /start ይጫኑ!")
             user_tweet_ids[username] = None
