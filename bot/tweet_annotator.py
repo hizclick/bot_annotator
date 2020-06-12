@@ -146,7 +146,7 @@ def start(update, context):
         ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
         ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
         ጠንካራ ባህል ያለን ህዝብዎች ነን ->ገምቢ\n
-        ቀኑ ሐሙስ ነው ፟-> ገለልተኛ \n
+        ቀኑ ሐሙስ ነው  -> ገለልተኛ \n
         ለመቀጠል /start ይጫኑ"""
 
         update.message.reply_text(text=examples)
@@ -273,8 +273,12 @@ def verify(username,fName,uname):
     if counter >= 4 or number_warnning_user.get(username,0)>2:
         message = "block"
         with open('blocked_user.txt', 'a', encoding='utf8') as f:
+            if uname is None:
+                uname = 'no username'
+            if fName is None:
+                fName = 'No first name'
             blocked_users.append(username)
-            f.write(str(username)+ ' ' + uname + ' ' + fName +  "\n")
+            f.write(username+ ' ' + uname + ' ' + fName +  "\n")
     print ("verify message = ", message)
     return message
 
