@@ -249,7 +249,7 @@ def send_email():
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, message)
 
-def verify(username,fName,uname, lname):
+def verify(username,fName,uname):
     counter = 0
     message = None
     user_tweet = []
@@ -398,7 +398,7 @@ def button(update, context):
         write(query, username)
     elif username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
-        message = verify(username,fName,uname, lname)
+        message = verify(username,fName,uname)
         if message == 'warning':
             query.edit_message_text(text="ተደጋጋሚ ስህተት እየሰሩ ነው፤ እባክዎን ተጠንቅቀው ይሙሉ, ለመቀጠል /start ይጫኑ!")
             user_tweet_ids[username] = None
