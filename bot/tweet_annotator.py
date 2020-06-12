@@ -379,12 +379,12 @@ def button(update, context):
 
     coun = users.count(username)  # TODO
     print("count for username ",username, "is", coun)
+    if uname is None:
+        uname = 'no username'
+    if fName is None:
+        fName = 'No first name'
     with open('log.txt', 'a', encoding='utf8') as f:
-        if update.effective_user.first_name is not None:
-            f.write(username + " " + update.effective_user.username + " " + update.effective_user.first_name  + "\n")
-        else:
-            f.write(username + "\n")
-
+        f.write(username + " " + uname + " " + fName + "\n")
     val = coun % controls_per_tweet
     if (int(coun) > max_allowed_tweet):
         query.edit_message_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
