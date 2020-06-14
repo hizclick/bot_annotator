@@ -203,8 +203,8 @@ def start(update, context):
         lock.release()
         return 0
 
-    print(len(raw_tweet_ids),"raw tweets")
-    print(len(annotated_tweet_ids),"annotated tweets")
+    print(len(set(raw_tweet_ids)),"raw tweets")
+    print(len(set(annotated_tweet_ids)),"annotated tweets")
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
             print("yes not in")
