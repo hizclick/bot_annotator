@@ -394,7 +394,7 @@ def button(update, context):
 
     if coun % number_tweet_to_reward == 0 and coun != 0:
         pr = prise(10,username) + " ለመቀጠል /start ይጫኑ!"
-        if user_tweet_ids[username]:
+        if username in user_tweet_ids and  user_tweet_ids[username]:
             write(query, username)
         else:
             write_correct(query, username, user_real[username])
@@ -402,7 +402,7 @@ def button(update, context):
         print(username +' ' + pr)
         return 0
 
-    if user_tweet_ids[username] is not None:
+    if username in user_tweet_ids and user_tweet_ids[username] is not None:
         write(query, username)
     elif username in user_real and user_real[username]:
         write_correct(query,username,user_real[username])
