@@ -519,9 +519,9 @@ def error(update, context):
             logger.warning('Update "%s" caused error "%s"', update, context.error)
             message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውን ንይሞክሩ!'
             print(message)
-            query = update.callback_query
-            print(message,"Again")
-            query.edit_message_text(text=message)
+         #   query = update.callback_query
+       #    print(message,"Again")
+         #   query.edit_message_text(text=message)
         except:
             print('Worst error! No idea')
 
