@@ -125,6 +125,7 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
     # username = update.effective_user.username
+    print("users", user_tweet_ids)
     username = str(update.effective_user.id)
     print(update.effective_user.first_name)
     del_timeout_users()
