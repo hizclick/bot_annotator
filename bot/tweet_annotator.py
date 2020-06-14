@@ -170,8 +170,6 @@ def start(update, context):
         send_email()
         return 0
 
-
-
     if username in user_tweet_ids and user_tweet_ids[username]:
         update.message.reply_text(text="እባክዎን ከላይ ያለውን መጀመሪያ ይሙሉ!")
         return 0
@@ -196,34 +194,26 @@ def start(update, context):
     if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) -1- len(get_charged_cards()) <= len(user_tweet_ids)):
-        print("Ezih ga new yemitilew")
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         del user_tweet_ids[username]
         send_email()
         lock.release()
         return 0
 
-    print(len(set(raw_tweet_ids)),"raw tweets")
-    print(len(set(annotated_tweet_ids)),"annotated tweets")
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
-            print("yes not in")
             if username in user_tweet_ids and user_tweet_ids[username] != None:
-                print("assigned")
                 break
             else:
-                print("to assign")
                 if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
-                    print(x, "user tweet id to work on it")
                     user_tweet_ids[username] = x
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
                     break
-    print(len(user_tweet_ids))
     if username in user_tweet_ids:
         update.message.reply_text(tweet_id_to_tweet[user_tweet_ids[username]], reply_markup=reply_markup)
     else:
-        update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
+        update.message.reply_text(text="እናመሰግናለን። አሁን ላይ ሁሉም ዳታ ተሞልቷል። ቀጣይ ዙር ሰርቬይ ሲጀመር እናሳውቀዎታለን!")
     lock.release()
 
 
