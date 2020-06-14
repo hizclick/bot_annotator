@@ -214,6 +214,7 @@ def start(update, context):
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
                     break
+    print(len(user_tweet_ids))
     if username in user_tweet_ids:
         update.message.reply_text(tweet_id_to_tweet[user_tweet_ids[username]], reply_markup=reply_markup)
     else:
