@@ -214,7 +214,10 @@ def start(update, context):
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
                     break
-    update.message.reply_text(tweet_id_to_tweet[user_tweet_ids[username]], reply_markup=reply_markup)
+    if username in user_tweet_ids:
+        update.message.reply_text(tweet_id_to_tweet[user_tweet_ids[username]], reply_markup=reply_markup)
+    else:
+        update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
     lock.release()
 
 
