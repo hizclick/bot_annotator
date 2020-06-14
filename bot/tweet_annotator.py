@@ -207,9 +207,12 @@ def start(update, context):
     print(len(annotated_tweet_ids),"annotated tweets")
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
+            print("yes not in")
             if username in user_tweet_ids and user_tweet_ids[username] != None:
+                print("assigned")
                 break
             else:
+                print("to assign")
                 if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                     print(x, "user tweet id to work on it")
                     user_tweet_ids[username] = x
