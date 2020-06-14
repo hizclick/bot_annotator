@@ -125,7 +125,6 @@ keyboard = [[InlineKeyboardButton("ገንቢ", callback_data='Pos'),
 
 def start(update, context):
     # username = update.effective_user.username
-    print("users", user_tweet_ids)
     username = str(update.effective_user.id)
     print(update.effective_user.first_name)
     del_timeout_users()
@@ -204,13 +203,15 @@ def start(update, context):
         lock.release()
         return 0
 
-
+    print(len(raw_tweet_ids),"raw tweets")
+    print(len(annotated_tweet_ids),"annotated tweets")
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
             if username in user_tweet_ids and user_tweet_ids[username] != None:
                 break
             else:
                 if x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
+                    print(x, "user tweet id to work on it")
                     user_tweet_ids[username] = x
                     annotated_tweet_ids.append(x)
                     tweet_id_time[username] = time.time()
