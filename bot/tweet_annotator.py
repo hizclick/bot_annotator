@@ -30,7 +30,7 @@ user_examples = []
 
 max_allowed_tweet = 500  # 500 tweets
 max_allowed_time = 600
-number_tweet_to_reward = 60 # how many tweets the user should annotate to get crads
+number_tweet_to_reward = 6 # how many tweets the user should annotate to get crads
 controls_per_tweet = 6 # for every 5 tweet, we need one control question
 
 bot_prop = prop.load_property_files('bot.properties')
@@ -196,6 +196,7 @@ def start(update, context):
     if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) -1- len(get_charged_cards()) <= len(user_tweet_ids)):
+        print("Ezih ga new yemitilew")
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
         del user_tweet_ids[username]
         send_email()
