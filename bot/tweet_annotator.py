@@ -514,14 +514,18 @@ def error(update, context):
         logging.debug("TELEGRAM ERROR: Other error - %s" % error)
     except:
         try:
+            import traceback
+
+            print(traceback.format_exc())
+
             logging.debug("TELEGRAM ERROR: Unknown - %s" % error)
             """Log Errors caused by Updates."""
             logger.warning('Update "%s" caused error "%s"', update, context.error)
             message = 'እባክዎ እንደገና ይሞክሩ, /start የሚለውን ንይሞክሩ!'
             print(message)
-         #   query = update.callback_query
-       #    print(message,"Again")
-         #   query.edit_message_text(text=message)
+            query = update.callback_query
+            print(message,"Again")
+            query.edit_message_text(text=message)
         except:
             print('Worst error! No idea')
 
