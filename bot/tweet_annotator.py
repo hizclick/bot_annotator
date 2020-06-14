@@ -331,26 +331,26 @@ def prise(num, username):
     user_cards.extend(re)
     number = ''
     cnt = 0
-    if len(te) > len(re):
-        for n in te:
-            if str(n) not in user_cards:
-                user_cards.append(n)
-                number = number + ' ካርድ ቁጥር :- ' + str(n)
-                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
-                fil.close()
+
+    for n in te:
+        if str(n) not in user_cards:
+            user_cards.append(n)
+            number = number + ' ካርድ ቁጥር :- ' + str(n)
+            fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+            fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
+            fil.close()
+            break
+
+    for n in fiv:
+        if str(n) not in user_cards:
+            user_cards.append(n)
+            number = number + ' ካርድ ቁጥር :- ' + str(n)
+            fil = open('rewarded_cards.txt', 'a', encoding='utf8')
+            fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
+            fil.close()
+            cnt += 1
+            if cnt > 1:
                 break
-    else:
-        for n in fiv:
-            if str(n) not in user_cards:
-                user_cards.append(n)
-                number = number + ' ካርድ ቁጥር :- ' + str(n)
-                fil = open('rewarded_cards.txt', 'a', encoding='utf8')
-                fil.writelines(str(n) + '\t' + '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + '\t' + username + "\n")
-                fil.close()
-                cnt += 1
-                if cnt > 1:
-                    break
     lock.release()
     return message + number
 
