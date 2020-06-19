@@ -411,7 +411,7 @@ def button(update, context):
         pr = prise(10,username) + " ለመቀጠል /start ይጫኑ!"
         if username in user_tweet_ids and  user_tweet_ids[username]:
             write(query, username)
-        else:
+        elif username in user_real:
             write_correct(query, username, user_real[username])
         query.edit_message_text(text=pr)
         print(username +' ' + pr)
