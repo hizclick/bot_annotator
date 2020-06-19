@@ -203,6 +203,7 @@ def start(update, context):
         lock.release()
         return 0
 
+    # if we do not have enough cards
     if len(get_five_birs()) + len(get_ten_birs()) - len(get_charged_cards())  <= len(user_tweet_ids) or \
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) -1- len(get_charged_cards()) <= len(user_tweet_ids)):
