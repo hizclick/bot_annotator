@@ -30,7 +30,7 @@ user_examples = []
 
 max_allowed_tweet = 500  # 500 tweets
 max_allowed_time = 600
-number_tweet_to_reward = 6 # how many tweets the user should annotate to get crads
+number_tweet_to_reward = 60 # how many tweets the user should annotate to get crads
 controls_per_tweet = 6 # for every 5 tweet, we need one control question
 
 bot_prop = prop.load_property_files('bot.properties')
@@ -38,6 +38,7 @@ bot_prop = prop.load_property_files('bot.properties')
 tweet_id_time = {}
 users = []
 annotated_tweet_ids = []
+annoated_tweet_user_ids = {}
 if not os.path.exists('annotated_tweets.csv'):
     columns = ['tweet_id', 'sentiment', 'tweet', 'username']
     columns = ['tweet_id', 'sentiment', 'tweet', 'username']
@@ -49,6 +50,16 @@ else:
     sentiment = data2['sentiment']
     count = data2['username'].value_counts()
     users = data2['username'].apply(lambda x: str(x)).tolist()
+
+# This is used when we re-annoate the complettd file again.... Since His friend did not finish all
+if not os.path.exists('old_annotated_tweets.csv'):
+    columns = ['tweet_id', 'sentiment', 'tweet', 'username']
+    df = pd.DataFrame(columns=columns)
+    df.to_csv('old_annotated_tweets.csv', index=False)
+else:
+    data2 = pd.read_csv('old_annotated_tweets.csv', encoding='utf8')
+    for i in range(len(data2)):
+        annoated_tweet_user_ids[data2['tweet_id'][i]] = data2['username'][i]
 
 ans = list()
 if not os.path.exists('control_questions.csv'):
@@ -92,6 +103,7 @@ raw_tweet_ids = data['tweet_id']
 tweet = data['tweet']
 
 user_tweet_ids = {}  # username1 = tweet_id1, username2 = annotated_tweet_ids
+
 
 tweet_id_to_tweet = dict()
 for item in raw_tweet_ids.keys():
@@ -202,6 +214,8 @@ def start(update, context):
 
     for x in raw_tweet_ids:
         if x not in annotated_tweet_ids:
+            if username in annoated_tweet_user_ids and x in annoated_tweet_user_ids and username == annoated_tweet_user_ids[x]:
+                continue;
             if username in user_tweet_ids and user_tweet_ids[username] != None:
                 break
             else:
@@ -427,6 +441,8 @@ def button(update, context):
     else:
         for x in raw_tweet_ids:
             if x not in annotated_tweet_ids:
+                if username in annoated_tweet_user_ids and username == annoated_tweet_user_ids[x]:
+                    continue;
                 if user_tweet_ids[username]:
                     break
                 elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
