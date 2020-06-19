@@ -208,7 +208,8 @@ def start(update, context):
             (len(get_five_birs()) % 2 == 1 and
              len(get_five_birs()) + len(get_ten_birs()) -1- len(get_charged_cards()) <= len(user_tweet_ids)):
         update.message.reply_text(text="ትንሽ ቆይተው ይሞክሩ!")
-        del user_tweet_ids[username]
+        if username in user_tweet_ids:
+            del user_tweet_ids[username]
         send_email()
         lock.release()
         return 0
@@ -444,7 +445,7 @@ def button(update, context):
             if x not in annotated_tweet_ids:
                 if username in annoated_tweet_user_ids and username == annoated_tweet_user_ids[x]:
                     continue;
-                if user_tweet_ids[username]:
+                if username in user_tweet_ids and  user_tweet_ids[username]:
                     break
                 elif x not in [user_tweet_id for user_tweet_id in user_tweet_ids.values()]:
                     user_tweet_ids[username] = x
