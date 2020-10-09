@@ -92,7 +92,7 @@ def normalize(norm):
 
     return norm
 
-if __name__ == '__main__':
+def main():
     data = pd.read_csv('raw_tweets.csv', encoding='utf8', header=0)
     raw_tweet = data['tweet']
     tweets = []
@@ -110,4 +110,9 @@ if __name__ == '__main__':
     vocabulary = all_tweets.split()
     print(vocabulary_size(vocabulary))
     print(unique_word(vocabulary))
+
+    
+if __name__ == '__main__':
+    main()
+
 
