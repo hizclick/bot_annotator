@@ -153,7 +153,7 @@ def start(update, context):
             text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ:: Settings-->click 'username'--> add username here.  ስለ ዩዘርንም አፈጣጠር ለማወቅ ይህንን ቪድዮ ይመልከቱ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
         return 0'''
     if user_examples.count(username) == 0:
-        examples = """ ይህ ሰርቬይ አግባብ ያልሆኑ ቃላት ወይም ንግግሮች ሊኖሩት ይችላል። ዳታውን ያገኘነው ከትዊተር ገፅ ላይ ነው። ከ18 አመት በታች ከሆኑና ተገቢ ያልሆኑ ንግግሮችን ማየት ካልፈለጉ  /end የሚለውን ተጭነው ይውጡ። 
+        examples = """ ይህ መጠይቅ የሙከራ ሰለሆነ፤ ሽልማት ኣያሸልምም፤ ይህ ሰርቬይ አግባብ ያልሆኑ ቃላት ወይም ንግግሮች ሊኖሩት ይችላል። ዳታውን ያገኘነው ከትዊተር ገፅ ላይ ነው። ከ18 አመት በታች ከሆኑና ተገቢ ያልሆኑ ንግግሮችን ማየት ካልፈለጉ  /end የሚለውን ተጭነው ይውጡ። 
         ምሳሌ \n
         ሰራተኛው አርፋጅ ነው -> አፍራሽ \n
         ልጁ ጥሩ ነው ግን ሰነፈ ነው -> ቅልቅል\n
@@ -170,10 +170,6 @@ def start(update, context):
         return 0
 
     coun = users.count(username)  # TODO
-    if (int(coun) > max_allowed_tweet):
-        update.message.reply_text(text="ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ ቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!")
-        del_timeout_users()
-        return 0
 
     if len(get_five_birs()) + len(get_ten_birs()) == len(get_charged_cards()) or\
             (len(get_five_birs()) % 2 == 1 and
@@ -189,12 +185,6 @@ def start(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     lock.acquire()
-
-    if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
-        message = 'ሁሉም ዳታ ተሞልቷል በቀጣይ ተጨማሪ ሲኖር እናሳውቀዎታለን፤ እናመሰግናለን!!'
-        update.message.reply_text(message)
-        lock.release()
-        return 0
 
     # if number of tweets are less than the max allowed tweets, we allow only limited users to annotate at a time
     if (len(raw_tweet_ids) - len(annotated_tweet_ids)) / number_tweet_to_reward <= len([v for k,v in user_tweet_ids.items() if v is not None]):
@@ -340,15 +330,18 @@ def button(update, context):
     fName  = str(update.effective_user.first_name)
     del_timeout_users()
     query = update.callback_query
+
+    query.edit_message_text(
+        text="ስለ ትብብርዎ ናመሰግናለን፤ይህ ይሙከራ ሰራ ስለሆነ ሽልማት አያስገኝም።")
+
+
     if len(get_five_birs()) + len(get_ten_birs()) <= len(get_charged_cards()):
         query.edit_message_text(text="ትንሽ ቆይተው ይሞክሩ!")
         print("+++++++++ADMINS, Please add cards to continue the annotation.+++++")
         send_email()
         return 0
 
-    if username == None:
-        query.edit_message_text(
-            text="እባክዎን በመጀመሪያ ዩዘርኔም ሴቲንግ ውስጥ ገብተው ይፍጠሩ::Settings-->Edit Profile-->Add username--Save. ለበለጠ መረጃ https://www.youtube.com/watch?v=AOYu40HTQcI&feature=youtu.be")
+
         return 0
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
@@ -388,11 +381,6 @@ def button(update, context):
         elif message == 'block':
             query.edit_message_text(text="ተደጋጋሚ ስህተት ስለ ሰሩ አካውንቶ ታግዶአል፡፡")
             return 0
-
-    if (len(annotated_tweet_ids) == len(raw_tweet_ids)):
-        message = 'ሁሉም ዳታ ተሞልቷል እስካሁን የሞሉት ዳታ ተመዝግቦ ተቀምጧል፣ በቀጣይ ዳታ በቅርብ ጊዜ እንለቃለን፣ ተመልሰው ይሞክሩ!!'
-        query.edit_message_text(text=message)
-        return 0
 
     if val == 0:
         reply_markup = InlineKeyboardMarkup(keyboard)
